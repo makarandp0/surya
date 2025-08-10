@@ -26,7 +26,7 @@
     "@types/node": "^24.2.1",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "^2.0.5",
     "chrome-types": "^0.1.282",
     "typescript": "^5.5.4",
