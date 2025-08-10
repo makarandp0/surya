@@ -3,3 +3,9 @@ dist
 .DS_Store
 
 coverage
+
+# Yarn files - use npm instead
+yarn.lock
+.yarn/
+.yarnrc
+.yarnrc.yml

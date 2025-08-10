@@ -8,6 +8,8 @@ Overview
 
 Getting Started
 
+**Note**: This project uses npm only. Yarn commands are blocked to ensure consistency.
+
 - Install deps: npm install
 - Dev (web preview): npm run dev
   - Note: chrome.\* APIs are unavailable in dev. Domain field is editable.
