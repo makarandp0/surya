@@ -32,5 +32,9 @@
     "typescript": "^5.5.4",
     "vite": "^5.4.2",
     "vitest": "^2.0.5"
+  },
+  "resolutions": {
+    "strip-ansi": "7.1.0",
+    "ansi-regex": "6.1.0"
   }
 }
