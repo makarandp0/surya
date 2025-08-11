@@ -1,17 +1,20 @@
 {
   "name": "chromepass-vite-react-chakra",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/sync-version.mjs",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "validate": "yarn typecheck && yarn test",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "version:sync": "node scripts/sync-version.mjs",
+    "version:bump:patch": "yarn version --patch --no-git-tag-version && node scripts/sync-version.mjs"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",

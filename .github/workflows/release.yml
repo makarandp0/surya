@@ -30,8 +30,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Sync manifest version with tag
+        run: node scripts/sync-version.mjs ${{ github.ref_name }}
+
       - name: Run tests
-        run: yarn check
+        run: yarn validate
 
       - name: Build extension
         run: yarn build

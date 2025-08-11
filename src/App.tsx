@@ -24,6 +24,7 @@ import {
 } from '@chakra-ui/react';
 import { normalizeDomainFromUrl, derivePassword } from './crypto';
 import { RepeatIcon } from '@chakra-ui/icons';
+import pkg from '../package.json';
 
 function isChromeExtensionEnv(): boolean {
   return typeof chrome !== 'undefined' && !!(chrome as any).tabs;
@@ -186,6 +187,9 @@ export default function App() {
         <Box fontSize="xs" color="gray.500">
           Tip: We never store your master key. Passwords are derived locally
           using PBKDF2-SHA256 with site-specific salt.
+        </Box>
+        <Box fontSize="xs" color="gray.500">
+          Version: v{pkg.version}
         </Box>
       </Stack>
     </Container>
