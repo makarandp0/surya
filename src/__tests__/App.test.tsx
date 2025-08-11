@@ -1,5 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
-import React from 'react';
+import { describe, it, expect } from 'vitest';
 
 // Import and test the crypto functions directly (core functionality)
 import { normalizeDomainFromUrl, derivePassword } from '../crypto';
@@ -125,7 +124,7 @@ describe('Core App Functionality', () => {
       expect(password).toHaveLength(16);
 
       // Should contain at least one symbol
-      const symbolRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+      const symbolRegex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
       expect(password).toMatch(symbolRegex);
     });
 

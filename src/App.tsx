@@ -31,11 +31,16 @@ import { RepeatIcon } from '@chakra-ui/icons';
 import pkg from '../package.json';
 
 function isChromeExtensionEnv(): boolean {
-  return typeof chrome !== 'undefined' && !!(chrome as any).tabs;
+  return (
+    typeof chrome !== 'undefined' &&
+    !!(chrome as typeof chrome & { tabs?: unknown }).tabs
+  );
 }
 
 async function fetchActiveTabDomain(): Promise<string> {
-  if (!isChromeExtensionEnv()) return '';
+  if (!isChromeExtensionEnv()) {
+    return '';
+  }
   return new Promise((resolve) => {
     try {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -70,7 +75,9 @@ export default function App() {
   useEffect(() => {
     // Try to prefill with the active tab's domain
     fetchActiveTabDomain().then((d) => {
-      if (d) setDomain(d);
+      if (d) {
+        setDomain(d);
+      }
     });
   }, []);
 
@@ -91,7 +98,9 @@ export default function App() {
   }, [mode, generated, totpCode, setValue]);
 
   async function handleGenerate() {
-    if (!canGenerate) return;
+    if (!canGenerate) {
+      return;
+    }
     try {
       if (mode === 'password') {
         const pwd = await derivePassword({
@@ -120,7 +129,7 @@ export default function App() {
           const result = await generateTOTP({ secret: totpSecret });
           setTotpCode(result.code);
           setTimeRemaining(result.timeRemaining);
-        } catch (e) {
+        } catch (_e) {
           // Ignore errors during auto-refresh
         }
       }, 1000);
@@ -131,7 +140,9 @@ export default function App() {
 
   async function handleRefreshDomain() {
     const d = await fetchActiveTabDomain();
-    if (d) setDomain(d);
+    if (d) {
+      setDomain(d);
+    }
   }
 
   return (

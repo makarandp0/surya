@@ -30,12 +30,17 @@ function renderApp() {
   return { container, root };
 }
 
-function queryByText(container: HTMLElement, text: string): HTMLElement | null {
+function _queryByText(
+  container: HTMLElement,
+  text: string,
+): HTMLElement | null {
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT);
   let node: Node | null = walker.currentNode;
   while ((node = walker.nextNode())) {
     const el = node as HTMLElement;
-    if (el.textContent && el.textContent.trim() === text) return el;
+    if (el.textContent && el.textContent.trim() === text) {
+      return el;
+    }
   }
   return null;
 }
@@ -98,9 +103,9 @@ describe('App UI', () => {
       masterInput.dispatchEvent(new Event('change', { bubbles: true }));
     });
 
-    const generateBtnAfter = Array.from(container.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Generate',
-    ) as HTMLButtonElement;
+    const generateBtnAfter = Array.from(
+      container.querySelectorAll('button'),
+    ).find((b) => b.textContent === 'Generate') as HTMLButtonElement;
     expect(generateBtnAfter.disabled).toBe(true);
   });
 

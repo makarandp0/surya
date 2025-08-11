@@ -16,12 +16,16 @@ export function normalizeDomainFromUrl(urlString: string): string {
   try {
     const url = new URL(urlString);
     let host = url.hostname || '';
-    if (host.startsWith('www.')) host = host.slice(4);
+    if (host.startsWith('www.')) {
+      host = host.slice(4);
+    }
     return host.toLowerCase();
   } catch {
     // Fallback if already a host
     let host = (urlString || '').trim();
-    if (host.startsWith('www.')) host = host.slice(4);
+    if (host.startsWith('www.')) {
+      host = host.slice(4);
+    }
     return host.toLowerCase();
   }
 }
@@ -37,7 +41,9 @@ function mapBytesToCharset(
   const out = [];
   let i = 0;
   for (let j = 0; j < length; j++) {
-    if (i >= bytes.length) i = 0;
+    if (i >= bytes.length) {
+      i = 0;
+    }
     const idx = bytes[i] % charset.length;
     out.push(charset[idx]);
     i++;
@@ -58,8 +64,12 @@ export async function derivePassword({
   includeSymbols?: boolean;
   iterations?: number;
 }): Promise<string> {
-  if (!masterKey) throw new Error('Missing master key');
-  if (!domain) throw new Error('Missing domain');
+  if (!masterKey) {
+    throw new Error('Missing master key');
+  }
+  if (!domain) {
+    throw new Error('Missing domain');
+  }
 
   const keyMaterial = await getKeyMaterial(masterKey);
   const salt = te.encode(`site:${domain}`);
@@ -82,14 +92,15 @@ export async function derivePassword({
 function base32Decode(encoded: string): Uint8Array {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
   let bits = '';
-  let value = 0;
 
   // Remove padding and convert to uppercase
   encoded = encoded.replace(/=/g, '').toUpperCase();
 
   for (const char of encoded) {
     const index = alphabet.indexOf(char);
-    if (index === -1) throw new Error('Invalid base32 character');
+    if (index === -1) {
+      throw new Error('Invalid base32 character');
+    }
     bits += index.toString(2).padStart(5, '0');
   }
 
@@ -148,7 +159,9 @@ export async function generateTOTP({
   period?: number;
   timestamp?: number;
 }): Promise<{ code: string; timeRemaining: number }> {
-  if (!secret) throw new Error('Missing TOTP secret');
+  if (!secret) {
+    throw new Error('Missing TOTP secret');
+  }
 
   const now = timestamp || Math.floor(Date.now() / 1000);
   const counter = Math.floor(now / period);
