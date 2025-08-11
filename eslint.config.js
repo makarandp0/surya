@@ -57,6 +57,10 @@ export default tseslint.config(
       'space-before-blocks': 'error',
       'space-infix-ops': 'error',
       'no-multi-spaces': 'error',
+
+      // Function style preferences
+      'func-style': ['error', 'expression'],
+      'prefer-arrow-callback': 'error',
     },
   },
   // Test files have slightly different rules

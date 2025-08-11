@@ -16,7 +16,7 @@ vi.mock('../crypto', async () => {
   };
 });
 
-function renderApp() {
+const renderApp = () => {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
@@ -28,12 +28,12 @@ function renderApp() {
     );
   });
   return { container, root };
-}
+};
 
-function _queryByText(
+const _queryByText = (
   container: HTMLElement,
   text: string,
-): HTMLElement | null {
+): HTMLElement | null => {
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT);
   let node: Node | null = walker.currentNode;
   while ((node = walker.nextNode())) {
@@ -43,7 +43,7 @@ function _queryByText(
     }
   }
   return null;
-}
+};
 
 describe('App UI', () => {
   it('renders headings and fields', () => {
