@@ -29,13 +29,13 @@
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "^3.2.4",
     "chrome-types": "^0.1.282",
+    "jsdom": "^25.0.0",
     "typescript": "^5.5.4",
     "vite": "^7.1.1",
     "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=20.0.0",
-    "npm": ">=8.0.0",
     "yarn": ">=1.22.0"
   },
   "engineStrict": true

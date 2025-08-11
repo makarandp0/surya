@@ -8,20 +8,20 @@ Overview
 
 Getting Started
 
-**Note**: This project uses npm only. Yarn commands are blocked to ensure consistency.
+**Note**: This project uses yarn only. npm commands are blocked to ensure consistency.
 
-- Install deps: npm install
-- Dev (web preview): npm run dev
+- Install deps: yarn install
+- Dev (web preview): yarn dev
   - Note: chrome.\* APIs are unavailable in dev. Domain field is editable.
-- Build extension: npm run build
+- Build extension: yarn build
 - Load in Chrome: chrome://extensions → Enable Developer mode → Load unpacked → select the dist/ folder.
 
 Testing & Type Checking
 
-- Type check: npm run typecheck
-- Run tests: npm test
-- Watch tests: npm run test:watch
-- Coverage report: npm run coverage (outputs to coverage/)
+- Type check: yarn typecheck
+- Run tests: yarn test
+- Watch tests: yarn test:watch
+- Coverage report: yarn coverage (outputs to coverage/)
 
 Usage
 
