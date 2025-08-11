@@ -154,18 +154,22 @@ async function hmacSha1(
         dataBufferByteLength: dataBuffer.byteLength,
         keyBufferConstructor: keyBuffer.constructor.name,
         dataBufferConstructor: dataBuffer.constructor.name,
+        keyViewLength: keyView.length,
+        dataViewLength: dataView.length,
+        keyViewConstructor: keyView.constructor.name,
+        dataViewConstructor: dataView.constructor.name,
       });
     }
 
     const cryptoKey = await crypto.subtle.importKey(
       'raw',
-      keyBuffer,
+      keyView, // Use the Uint8Array view, not the ArrayBuffer
       { name: 'HMAC', hash: 'SHA-1' },
       false,
       ['sign'],
     );
 
-    const signature = await crypto.subtle.sign('HMAC', cryptoKey, dataBuffer);
+    const signature = await crypto.subtle.sign('HMAC', cryptoKey, dataView); // Use the Uint8Array view
     return new Uint8Array(signature);
   } catch (error) {
     // Enhanced error logging for CI debugging
