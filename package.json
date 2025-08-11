@@ -4,14 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "preinstall": "npx only-allow npm",
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "check": "npm run typecheck && npm run test",
+    "validate": "yarn typecheck && yarn test",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -35,11 +34,9 @@
     "vitest": "^3.2.4"
   },
   "engines": {
-    "npm": ">=8.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0",
+    "yarn": ">=1.22.0"
   },
-  "engineStrict": true,
-  "resolutions": {
-    "strip-ansi": "7.1.0",
-    "ansi-regex": "6.1.0"
-  }
+  "engineStrict": true
 }

@@ -16,10 +16,6 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      # Force npm to install optional dependencies
-      npm_config_optional: true
-
     strategy:
       matrix:
         node-version: [18, 20]
@@ -32,27 +28,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          # Remove npm cache to avoid optional dependency issues
-          cache: ''
+          cache: 'yarn'
 
-      - name: Clean and install dependencies
-        run: |
-          # Clear npm cache and remove node_modules
-          npm cache clean --force
-          rm -rf package-lock.json node_modules
-          # Install dependencies with frozen lockfile disabled to regenerate properly
-          npm install
-          # Verify rollup installation
-          npx rollup --version || npm install @rollup/rollup-linux-x64-gnu --no-save
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Run type checking
-        run: npm run typecheck
+        run: yarn typecheck
 
       - name: Run tests
-        run: npm run test
+        run: yarn test
 
       - name: Generate coverage report
-        run: npm run coverage
+        run: yarn coverage
 
       - name: Upload coverage to Codecov
         if: matrix.node-version == 20
@@ -63,7 +51,7 @@ jobs:
           name: codecov-umbrella
 
       - name: Build extension
-        run: npm run build
+        run: yarn build
 
       - name: Upload build artifacts
         if: matrix.node-version == 20
