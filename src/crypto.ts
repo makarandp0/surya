@@ -167,6 +167,9 @@ export const generateTOTP = async ({
   if (!secret) {
     throw new Error('Missing TOTP secret');
   }
+  if (secret.length <= 2) {
+    throw new Error('Invalid TOTP secret length');
+  }
 
   const now = timestamp || Math.floor(Date.now() / 1000);
   const counter = Math.floor(now / period);

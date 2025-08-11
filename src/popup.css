@@ -48,11 +48,33 @@ body.chrome-extension {
 /* Ensure proper spacing for the extension popup */
 .popup-container {
   padding: 12px !important;
-  width: 100% !important;
-  max-width: none !important;
-  margin: 0 !important;
-  height: auto !important; /* Allow natural height expansion */
-  overflow: visible !important;
+  height: auto !important;
+  min-height: 560px !important; /* Ensure minimum height for proper layout */
+}
+
+/* Custom scrollbar styling for TOTP accounts list */
+.totp-accounts-list {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 transparent;
+}
+
+.totp-accounts-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.totp-accounts-list::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.totp-accounts-list::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.totp-accounts-list::-webkit-scrollbar-thumb:hover {
+  background-color: #a0aec0;
 }
 
 /* Enhanced visual styles */

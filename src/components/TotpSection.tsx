@@ -6,6 +6,7 @@ import {
   HStack,
   Input,
   InputGroup,
+  InputLeftElement,
   InputRightElement,
   Text,
   VStack,
@@ -13,8 +14,6 @@ import {
   CircularProgress,
   CircularProgressLabel,
   Badge,
-  Card,
-  CardBody,
   IconButton,
   Divider,
   Flex,
@@ -24,8 +23,12 @@ import {
   ViewOffIcon,
   AttachmentIcon,
   CopyIcon,
+  SearchIcon,
+  CloseIcon,
 } from '@chakra-ui/icons';
 import { generateTOTP } from '../crypto';
+import { useFuzzyFilter } from '../hooks/useFuzzyFilter';
+import { TotpCard } from './TotpCard';
 
 export const TotpSection: React.FC = () => {
   const toast = useToast();
@@ -40,6 +43,11 @@ export const TotpSection: React.FC = () => {
   const [selectedSecretIndex, setSelectedSecretIndex] = useState<number>(-1);
   const [generatedCodes, setGeneratedCodes] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [filterQuery, setFilterQuery] = useState('');
+
+  // Use custom fuzzy filter hook
+  const { filteredIndices, filteredCount, totalCount, hasFilter } =
+    useFuzzyFilter(importedSecrets, filterQuery);
 
   const copyCode = async (code: string, label?: string) => {
     if (!code) {
@@ -52,6 +60,8 @@ export const TotpSection: React.FC = () => {
           status: 'success',
           title: 'Copied',
           description: label ? `Code for ${label} copied` : undefined,
+          isClosable: true,
+          duration: 2000,
         });
       }
     } catch {
@@ -139,7 +149,8 @@ export const TotpSection: React.FC = () => {
       toast({
         status: 'success',
         title: 'Import Successful',
-        description: `Imported ${secrets.length} TOTP secret(s)`,
+        description: `Imported ${secrets.length}`,
+        isClosable: true,
       });
     } catch (e) {
       const err = e as Error;
@@ -171,7 +182,7 @@ export const TotpSection: React.FC = () => {
             .trim()
             .toUpperCase()
             .replace(/[^A-Z2-7]/g, '');
-          if (cleanSecret.length > 0) {
+          if (cleanSecret.length > 1) {
             const result = await generateTOTP({ secret: cleanSecret });
             setTotpCode(result.code);
             setTimeRemaining(result.timeRemaining);
@@ -282,9 +293,45 @@ export const TotpSection: React.FC = () => {
                 py={1}
                 borderRadius="full"
               >
-                {importedSecrets.length} accounts
+                {hasFilter
+                  ? `${filteredCount} of ${totalCount} accounts`
+                  : `${totalCount} accounts`}
               </Badge>
             </HStack>
+
+            <InputGroup size="sm">
+              <InputLeftElement pointerEvents="none">
+                <SearchIcon color="gray.400" />
+              </InputLeftElement>
+              <Input
+                placeholder="Filter accounts (e.g., 'github', 'goog mail')"
+                value={filterQuery}
+                onChange={(e) => setFilterQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setFilterQuery('');
+                  }
+                }}
+                bg="gray.50"
+                borderColor="gray.200"
+                _focus={{ borderColor: 'blue.400', bg: 'white' }}
+                _hover={{ borderColor: 'gray.300' }}
+                aria-label="Filter TOTP accounts"
+              />
+              {filterQuery && (
+                <InputRightElement>
+                  <IconButton
+                    aria-label="Clear filter"
+                    icon={<CloseIcon />}
+                    size="xs"
+                    variant="ghost"
+                    onClick={() => setFilterQuery('')}
+                    color="gray.400"
+                    _hover={{ color: 'gray.600' }}
+                  />
+                </InputRightElement>
+              )}
+            </InputGroup>
 
             <Box
               borderWidth="1px"
@@ -297,99 +344,46 @@ export const TotpSection: React.FC = () => {
               className="totp-accounts-list"
             >
               <VStack spacing={2}>
-                {importedSecrets.map((s, i) => (
-                  <Card key={i} variant="elevated" size="sm" w="full">
-                    <CardBody p={3}>
-                      <VStack spacing={2}>
-                        {/* Account Header */}
-                        <HStack justify="space-between" w="full">
-                          <HStack maxW="70%">
-                            {s.color && (
-                              <Box
-                                w="10px"
-                                h="10px"
-                                borderRadius="full"
-                                bg={s.color}
-                                border="1px solid"
-                                borderColor="gray.300"
-                              />
-                            )}
-                            <Text
-                              fontWeight="semibold"
-                              fontSize="sm"
-                              color="gray.800"
-                              noOfLines={1}
-                              title={s.name}
-                            >
-                              {s.name}
-                            </Text>
-                          </HStack>
-                          <CircularProgress
-                            value={(timeRemaining / 30) * 100}
-                            size="28px"
-                            color={
-                              timeRemaining <= 5
-                                ? 'red.400'
-                                : timeRemaining <= 10
-                                ? 'orange.400'
-                                : 'green.400'
-                            }
-                            trackColor="gray.200"
-                          >
-                            <CircularProgressLabel
-                              fontSize="xs"
-                              fontWeight="bold"
-                            >
-                              {timeRemaining}
-                            </CircularProgressLabel>
-                          </CircularProgress>
-                        </HStack>
-
-                        {/* TOTP Code Display */}
-                        <HStack w="full" spacing={2}>
-                          <Input
-                            readOnly
-                            value={formatCode(generatedCodes[i] || '')}
-                            placeholder="Generating..."
-                            fontSize="lg"
-                            fontFamily="mono"
-                            fontWeight="bold"
-                            letterSpacing="0.15em"
-                            textAlign="center"
-                            cursor="pointer"
-                            bg="gray.100"
-                            borderColor="gray.300"
-                            _hover={{ bg: 'blue.50', borderColor: 'blue.300' }}
-                            _focus={{ bg: 'white', borderColor: 'blue.400' }}
-                            onClick={() =>
-                              copyCode(generatedCodes[i] || '', s.name)
-                            }
-                            title="Click to copy"
-                            h="10"
-                            size="sm"
-                          />
-                          <IconButton
-                            aria-label="Copy code"
-                            icon={<CopyIcon />}
-                            onClick={() =>
-                              copyCode(generatedCodes[i] || '', s.name)
-                            }
-                            colorScheme="blue"
-                            variant="outline"
-                            size="sm"
-                            isDisabled={!generatedCodes[i]}
-                          />
-                        </HStack>
-                      </VStack>
-                    </CardBody>
-                  </Card>
-                ))}
+                {filteredIndices.length === 0 && (
+                  <VStack spacing={2} py={6}>
+                    <Text fontSize="sm" color="gray.500">
+                      {hasFilter
+                        ? '🔍 No matching accounts'
+                        : '📱 No accounts found'}
+                    </Text>
+                    {hasFilter && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="blue"
+                        onClick={() => setFilterQuery('')}
+                      >
+                        Clear filter
+                      </Button>
+                    )}
+                  </VStack>
+                )}
+                {filteredIndices.map((i: number) => {
+                  const s = importedSecrets[i];
+                  return (
+                    <TotpCard
+                      key={i}
+                      name={s.name}
+                      code={generatedCodes[i] || ''}
+                      timeRemaining={timeRemaining}
+                      color={s.color}
+                      onCopyCode={copyCode}
+                    />
+                  );
+                })}
               </VStack>
             </Box>
 
-            {importedSecrets.length > 3 && (
+            {totalCount > 3 && (
               <Text fontSize="xs" color="gray.500" textAlign="center">
-                Scroll above to see all {importedSecrets.length} accounts
+                {hasFilter
+                  ? `Showing ${filteredCount} of ${totalCount} accounts`
+                  : `Scroll to see all ${totalCount} accounts`}
               </Text>
             )}
           </VStack>
