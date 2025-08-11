@@ -63,13 +63,14 @@ describe('App UI', () => {
   it('toggles master key visibility with Show/Hide', () => {
     const { container } = renderApp();
     const masterInput = container.querySelector(
-      'input[placeholder="Enter master key"]',
+      'input[placeholder="Enter your master key"]',
     ) as HTMLInputElement;
     expect(masterInput).toBeTruthy();
     expect(masterInput.type).toBe('password');
 
-    const toggleBtn = Array.from(container.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Show' || b.textContent === 'Hide',
+    // Look for the show/hide icon button instead of text button
+    const toggleBtn = container.querySelector(
+      'button[aria-label="Show password"]',
     ) as HTMLButtonElement;
     expect(toggleBtn).toBeTruthy();
 
@@ -87,7 +88,7 @@ describe('App UI', () => {
   it('keeps Generate disabled until both fields are filled', async () => {
     const { container } = renderApp();
     const masterInput = container.querySelector(
-      'input[placeholder="Enter master key"]',
+      'input[placeholder="Enter your master key"]',
     ) as HTMLInputElement;
     const generateBtn = Array.from(container.querySelectorAll('button')).find(
       (b) => b.textContent === 'Generate',
