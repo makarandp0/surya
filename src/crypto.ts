@@ -111,6 +111,7 @@ function base32Decode(encoded: string): Uint8Array {
     }
   }
 
+  // Create a new Uint8Array to ensure we have a clean, detached buffer
   return new Uint8Array(bytes);
 }
 
@@ -119,12 +120,15 @@ async function hmacSha1(
   key: Uint8Array,
   data: Uint8Array,
 ): Promise<Uint8Array> {
-  // Create proper ArrayBuffer copies for Web Crypto API
-  const keyBuffer = new ArrayBuffer(key.length);
-  new Uint8Array(keyBuffer).set(key);
+  // Ensure we have proper ArrayBuffer instances for Web Crypto API
+  // Create new ArrayBuffers and copy the data to avoid any shared buffer issues
+  const keyBuffer = new ArrayBuffer(key.byteLength);
+  const keyView = new Uint8Array(keyBuffer);
+  keyView.set(key);
 
-  const dataBuffer = new ArrayBuffer(data.length);
-  new Uint8Array(dataBuffer).set(data);
+  const dataBuffer = new ArrayBuffer(data.byteLength);
+  const dataView = new Uint8Array(dataBuffer);
+  dataView.set(data);
 
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
