@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
-import App from './App';
+import { App } from './App';
 
 const theme = extendTheme({
   initialColorMode: 'system',
@@ -9,12 +9,12 @@ const theme = extendTheme({
 });
 
 // Add a class to body if running as Chrome extension
-function isChromeExtensionEnv(): boolean {
+const isChromeExtensionEnv = (): boolean => {
   return (
     typeof chrome !== 'undefined' &&
     !!(chrome as typeof chrome & { tabs?: unknown }).tabs
   );
-}
+};
 
 if (isChromeExtensionEnv()) {
   document.body.classList.add('chrome-extension');

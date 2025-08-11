@@ -33,14 +33,14 @@ import { normalizeDomainFromUrl, derivePassword, generateTOTP } from './crypto';
 import { RepeatIcon } from '@chakra-ui/icons';
 import pkg from '../package.json';
 
-function isChromeExtensionEnv(): boolean {
+const isChromeExtensionEnv = (): boolean => {
   return (
     typeof chrome !== 'undefined' &&
     !!(chrome as typeof chrome & { tabs?: unknown }).tabs
   );
-}
+};
 
-async function fetchActiveTabDomain(): Promise<string> {
+const fetchActiveTabDomain = async (): Promise<string> => {
   if (!isChromeExtensionEnv()) {
     return '';
   }
@@ -55,9 +55,9 @@ async function fetchActiveTabDomain(): Promise<string> {
       resolve('');
     }
   });
-}
+};
 
-export default function App() {
+export const App = () => {
   const toast = useToast();
   const [mode, setMode] = useState<'password' | 'totp'>('password');
   const [masterKey, setMasterKey] = useState<string>('');
@@ -137,7 +137,7 @@ export default function App() {
     }
   }, [mode, generated, totpCode, setValue]);
 
-  async function handleGenerate() {
+  const handleGenerate = async () => {
     if (!canGenerate) {
       return;
     }
@@ -177,10 +177,12 @@ export default function App() {
       const err = e as Error;
       toast({ status: 'error', title: 'Error', description: err.message });
     }
-  }
+  };
 
   // Handle file import
-  async function handleFileImport(event: React.ChangeEvent<HTMLInputElement>) {
+  const handleFileImport = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -236,7 +238,7 @@ export default function App() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }
+  };
 
   // Auto-refresh TOTP codes
   useEffect(() => {
@@ -261,12 +263,12 @@ export default function App() {
     }
   }, [mode, totpCode, currentTotpSecret]);
 
-  async function handleRefreshDomain() {
+  const handleRefreshDomain = async () => {
     const d = await fetchActiveTabDomain();
     if (d) {
       setDomain(d);
     }
-  }
+  };
 
   return (
     <Container
@@ -519,4 +521,4 @@ export default function App() {
       </Stack>
     </Container>
   );
-}
+};

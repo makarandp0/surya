@@ -2,7 +2,7 @@
 
 const te = new TextEncoder();
 
-async function getKeyMaterial(masterKey: string): Promise<CryptoKey> {
+const getKeyMaterial = async (masterKey: string): Promise<CryptoKey> => {
   return crypto.subtle.importKey(
     'raw',
     te.encode(masterKey),
@@ -10,9 +10,9 @@ async function getKeyMaterial(masterKey: string): Promise<CryptoKey> {
     false,
     ['deriveBits'],
   );
-}
+};
 
-export function normalizeDomainFromUrl(urlString: string): string {
+export const normalizeDomainFromUrl = (urlString: string): string => {
   try {
     const url = new URL(urlString);
     let host = url.hostname || '';
@@ -28,13 +28,13 @@ export function normalizeDomainFromUrl(urlString: string): string {
     }
     return host.toLowerCase();
   }
-}
+};
 
-function mapBytesToCharset(
+const mapBytesToCharset = (
   bytes: Uint8Array,
   length: number,
   opts: { includeSymbols: boolean },
-): string {
+): string => {
   const base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const symbols = '!@#$%^&*_-+=:,.?';
   const charset = opts.includeSymbols ? base + symbols : base;
@@ -49,9 +49,9 @@ function mapBytesToCharset(
     i++;
   }
   return out.join('');
-}
+};
 
-export async function derivePassword({
+export const derivePassword = async ({
   masterKey,
   domain,
   length = 16,
@@ -63,7 +63,7 @@ export async function derivePassword({
   length?: number;
   includeSymbols?: boolean;
   iterations?: number;
-}): Promise<string> {
+}): Promise<string> => {
   if (!masterKey) {
     throw new Error('Missing master key');
   }
@@ -86,10 +86,10 @@ export async function derivePassword({
   );
   const bytes = new Uint8Array(bits);
   return mapBytesToCharset(bytes, length, { includeSymbols });
-}
+};
 
 // Base32 decoding for TOTP secret keys
-function base32Decode(encoded: string): Uint8Array {
+const base32Decode = (encoded: string): Uint8Array => {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
   let bits = '';
 
@@ -114,13 +114,13 @@ function base32Decode(encoded: string): Uint8Array {
   // Create a new Uint8Array from a regular array to ensure we have a clean, detached buffer
   // This avoids potential issues with shared ArrayBuffers in different Node.js environments
   return Uint8Array.from(bytes);
-}
+};
 
 // HMAC-SHA1 implementation for TOTP
-async function hmacSha1(
+const hmacSha1 = async (
   key: Uint8Array,
   data: Uint8Array,
-): Promise<Uint8Array> {
+): Promise<Uint8Array> => {
   // Ensure we have proper ArrayBuffer instances for Web Crypto API
   // Create new ArrayBuffers and copy the data to avoid any shared buffer issues
   const keyBuffer = new ArrayBuffer(key.length);
@@ -141,19 +141,19 @@ async function hmacSha1(
 
   const signature = await crypto.subtle.sign('HMAC', cryptoKey, dataView); // Use the Uint8Array view
   return new Uint8Array(signature);
-}
+};
 
 // Convert number to 8-byte big-endian array
-function numberTo8ByteArray(num: number): Uint8Array {
+const numberTo8ByteArray = (num: number): Uint8Array => {
   const array = new Uint8Array(8);
   for (let i = 7; i >= 0; i--) {
     array[i] = num & 0xff;
     num = Math.floor(num / 256);
   }
   return array;
-}
+};
 
-export async function generateTOTP({
+export const generateTOTP = async ({
   secret,
   digits = 6,
   period = 30,
@@ -163,7 +163,7 @@ export async function generateTOTP({
   digits?: number;
   period?: number;
   timestamp?: number;
-}): Promise<{ code: string; timeRemaining: number }> {
+}): Promise<{ code: string; timeRemaining: number }> => {
   if (!secret) {
     throw new Error('Missing TOTP secret');
   }
@@ -203,4 +203,4 @@ export async function generateTOTP({
       }`,
     );
   }
-}
+};
