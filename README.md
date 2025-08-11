@@ -3,6 +3,7 @@ ChromePass — MV3 Vite + React + Chakra
 Overview
 
 - Deterministic password manager: generates a site-specific password from a master key and the site domain.
+- TOTP authenticator: generates time-based one-time passwords with import support for TOTP app backups.
 - No storage, no network, entirely local in the popup.
 - Built with Vite + React + Chakra UI. Chrome Manifest V3.
 
@@ -32,27 +33,59 @@ Versioning
 
 Usage
 
+**Password Mode:**
+
 - Click the extension icon to open the popup.
 - Enter your Master Key. We do not store it.
 - The Site Domain auto-fills from the active tab; you can edit it.
 - Choose length and whether to include symbols, then Generate.
 - Click Copy to put the password on your clipboard.
 
+**TOTP Mode:**
+
+- Switch to TOTP mode using the radio buttons.
+- **Import Method**: Click "Import File" to import TOTP secrets from backup files (supports TOTP app JSON format).
+- **Manual Method**: Enter a Base32 secret key directly.
+- Select from imported accounts or use manual entry.
+- Generate TOTP codes with automatic refresh and time remaining indicator.
+- Click Copy to put the code on your clipboard.
+
+TOTP Import Support
+
+- Supports JSON backup files from TOTP apps in the format:
+  ```json
+  {
+    "v": 2,
+    "ts": timestamp,
+    "d": [
+      {
+        "name": "Account Name",
+        "secret": "BASE32SECRET",
+        "color": "#HexColor"
+      }
+    ]
+  }
+  ```
+- A sample file is included at `public/sample-totp-backup.json` for testing.
+
 Derivation Details
 
-- Algorithm: PBKDF2(SHA-256), iterations: 200,000, salt: "site:" + domain.
+- **Passwords**: PBKDF2(SHA-256), iterations: 200,000, salt: "site:" + domain.
+- **TOTP**: HMAC-SHA1 with 30-second time windows (RFC 6238 compliant).
 - The derived bytes are mapped into an allowed character set (A–Z, a–z, 0–9, and optional symbols).
 - The output is deterministic for the same (master key, domain, options).
 
 Security Notes
 
-- Master key is held only in memory while the popup is open.
-- There is no server, database, or sync. Consider a secure backup of your master key.
+- Master key and TOTP secrets are held only in memory while the popup is open.
+- There is no server, database, or sync. Consider a secure backup of your master key and TOTP secrets.
+- TOTP codes are generated entirely locally using Web Crypto API.
 
 Structure
 
 - public/manifest.json — Chrome MV3 manifest (copied to dist/)
+- public/sample-totp-backup.json — Sample TOTP backup file for testing
 - index.html — Popup HTML (Vite entry)
-- src/crypto.js — Derivation helpers (PBKDF2 + mapping)
-- src/App.jsx — Popup UI (React + Chakra)
-- src/main.jsx — App bootstrap
+- src/crypto.ts — Derivation helpers (PBKDF2 + TOTP)
+- src/App.tsx — Popup UI (React + Chakra)
+- src/main.tsx — App bootstrap

@@ -121,88 +121,26 @@ async function hmacSha1(
   key: Uint8Array,
   data: Uint8Array,
 ): Promise<Uint8Array> {
-  try {
-    // Debug logging for CI troubleshooting
-    if (process.env.NODE_ENV === 'test' || process.env.CI) {
-      // eslint-disable-next-line no-console
-      console.debug('[TOTP Debug] hmacSha1 input:', {
-        keyLength: key.length,
-        dataLength: data.length,
-        keyConstructor: key.constructor.name,
-        dataConstructor: data.constructor.name,
-        keyBuffer: key.buffer ? 'has buffer' : 'no buffer',
-        dataBuffer: data.buffer ? 'has buffer' : 'no buffer',
-        cryptoAvailable: typeof crypto !== 'undefined',
-        subtleAvailable: typeof crypto?.subtle !== 'undefined',
-      });
-    }
+  // Ensure we have proper ArrayBuffer instances for Web Crypto API
+  // Create new ArrayBuffers and copy the data to avoid any shared buffer issues
+  const keyBuffer = new ArrayBuffer(key.length);
+  const keyView = new Uint8Array(keyBuffer);
+  keyView.set(new Uint8Array(key)); // Ensure we have a proper Uint8Array
 
-    // Ensure we have proper ArrayBuffer instances for Web Crypto API
-    // Create new ArrayBuffers and copy the data to avoid any shared buffer issues
-    const keyBuffer = new ArrayBuffer(key.length);
-    const keyView = new Uint8Array(keyBuffer);
-    keyView.set(new Uint8Array(key)); // Ensure we have a proper Uint8Array
+  const dataBuffer = new ArrayBuffer(data.length);
+  const dataView = new Uint8Array(dataBuffer);
+  dataView.set(new Uint8Array(data)); // Ensure we have a proper Uint8Array
 
-    const dataBuffer = new ArrayBuffer(data.length);
-    const dataView = new Uint8Array(dataBuffer);
-    dataView.set(new Uint8Array(data)); // Ensure we have a proper Uint8Array
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyView, // Use the Uint8Array view, not the ArrayBuffer
+    { name: 'HMAC', hash: 'SHA-1' },
+    false,
+    ['sign'],
+  );
 
-    if (process.env.NODE_ENV === 'test' || process.env.CI) {
-      // eslint-disable-next-line no-console
-      console.debug('[TOTP Debug] ArrayBuffers created:', {
-        keyBufferByteLength: keyBuffer.byteLength,
-        dataBufferByteLength: dataBuffer.byteLength,
-        keyBufferConstructor: keyBuffer.constructor.name,
-        dataBufferConstructor: dataBuffer.constructor.name,
-        keyViewLength: keyView.length,
-        dataViewLength: dataView.length,
-        keyViewConstructor: keyView.constructor.name,
-        dataViewConstructor: dataView.constructor.name,
-      });
-    }
-
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      keyView, // Use the Uint8Array view, not the ArrayBuffer
-      { name: 'HMAC', hash: 'SHA-1' },
-      false,
-      ['sign'],
-    );
-
-    const signature = await crypto.subtle.sign('HMAC', cryptoKey, dataView); // Use the Uint8Array view
-    return new Uint8Array(signature);
-  } catch (error) {
-    // Enhanced error logging for CI debugging
-    if (process.env.NODE_ENV === 'test' || process.env.CI) {
-      // eslint-disable-next-line no-console
-      console.error('[TOTP Debug] hmacSha1 error:', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        keyInfo: {
-          length: key.length,
-          constructor: key.constructor.name,
-          isTypedArray: key instanceof Uint8Array,
-          hasBuffer: 'buffer' in key,
-          bufferType: key.buffer ? key.buffer.constructor.name : 'none',
-        },
-        dataInfo: {
-          length: data.length,
-          constructor: data.constructor.name,
-          isTypedArray: data instanceof Uint8Array,
-          hasBuffer: 'buffer' in data,
-          bufferType: data.buffer ? data.buffer.constructor.name : 'none',
-        },
-        environment: {
-          nodeVersion: process.version,
-          platform: process.platform,
-          isCI: !!process.env.CI,
-          cryptoGlobal: typeof crypto,
-          cryptoSubtle: typeof crypto?.subtle,
-        },
-      });
-    }
-    throw error;
-  }
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, dataView); // Use the Uint8Array view
+  return new Uint8Array(signature);
 }
 
 // Convert number to 8-byte big-endian array
@@ -235,31 +173,8 @@ export async function generateTOTP({
   const timeRemaining = period - (now % period);
 
   try {
-    // Debug logging for CI troubleshooting
-    if (process.env.NODE_ENV === 'test' || process.env.CI) {
-      // eslint-disable-next-line no-console
-      console.debug('[TOTP Debug] generateTOTP called:', {
-        secret: secret.substring(0, 4) + '...', // Only show first 4 chars for security
-        digits,
-        period,
-        timestamp,
-        now,
-        counter,
-        timeRemaining,
-      });
-    }
-
     // Decode base32 secret
     const secretBytes = base32Decode(secret);
-
-    if (process.env.NODE_ENV === 'test' || process.env.CI) {
-      // eslint-disable-next-line no-console
-      console.debug('[TOTP Debug] base32Decode result:', {
-        secretBytesLength: secretBytes.length,
-        secretBytesConstructor: secretBytes.constructor.name,
-        firstFewBytes: Array.from(secretBytes.slice(0, 4)),
-      });
-    }
 
     // Convert counter to 8-byte array
     const counterBytes = numberTo8ByteArray(counter);
@@ -282,21 +197,6 @@ export async function generateTOTP({
     };
   } catch (error) {
     // Enhanced error logging for CI debugging
-    if (process.env.NODE_ENV === 'test' || process.env.CI) {
-      // eslint-disable-next-line no-console
-      console.error('[TOTP Debug] generateTOTP error:', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        secretLength: secret.length,
-        environment: {
-          nodeVersion: process.version,
-          platform: process.platform,
-          isCI: !!process.env.CI,
-          cryptoAvailable: typeof crypto !== 'undefined',
-          cryptoSubtleAvailable: typeof crypto?.subtle !== 'undefined',
-        },
-      });
-    }
     throw new Error(
       `Failed to generate TOTP: ${
         error instanceof Error ? error.message : 'Unknown error'
