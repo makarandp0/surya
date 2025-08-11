@@ -2,11 +2,13 @@
   "manifest_version": 3,
   "name": "ChromePass",
   "description": "Deterministic password generator: master key + site, no storage.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "action": {
     "default_title": "ChromePass",
     "default_popup": "index.html"
   },
-  "permissions": ["tabs", "activeTab"]
+  "permissions": [
+    "tabs",
+    "activeTab"
+  ]
 }
-
