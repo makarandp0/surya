@@ -16,9 +16,13 @@ jobs:
     permissions:
       contents: read
 
+    env:
+      # Force npm to install optional dependencies
+      npm_config_optional: true
+
     strategy:
       matrix:
-        node-version: [20]
+        node-version: [18, 20]
 
     steps:
       - name: Checkout code
@@ -28,12 +32,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          # Remove npm cache to avoid optional dependency issues
+          cache: ''
 
-      - name: Install dependencies
+      - name: Clean and install dependencies
         run: |
+          # Clear npm cache and remove node_modules
+          npm cache clean --force
           rm -rf package-lock.json node_modules
+          # Install dependencies with frozen lockfile disabled to regenerate properly
           npm install
+          # Verify rollup installation
+          npx rollup --version || npm install @rollup/rollup-linux-x64-gnu --no-save
 
       - name: Run type checking
         run: npm run typecheck
