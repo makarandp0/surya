@@ -146,7 +146,12 @@ export default function App() {
   }
 
   return (
-    <Container maxW="sm" p={4}>
+    <Container
+      maxW={isChromeExtensionEnv() ? 'none' : 'sm'}
+      w={isChromeExtensionEnv() ? '100%' : 'auto'}
+      p={4}
+      className={isChromeExtensionEnv() ? 'popup-container' : ''}
+    >
       <Stack spacing={4}>
         <Heading size="md">ChromePass</Heading>
         <Text color="gray.500">

@@ -1,0 +1,72 @@
+/* Chrome Extension Popup Styles */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 380px;
+  max-width: 400px;
+  min-height: 500px;
+  max-height: 600px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 380px;
+}
+
+/* Ensure the popup has a proper width when running as Chrome extension */
+body.chrome-extension {
+  width: 380px;
+  min-width: 380px;
+  max-width: 400px;
+}
+
+/* Override any default browser styles that might interfere */
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure Chakra UI components work well in the popup */
+.chakra-container {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 16px !important;
+  margin: 0 !important;
+}
+
+/* Ensure proper spacing for the extension popup */
+.popup-container {
+  padding: 12px !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* Ensure inputs and form elements fit properly */
+.popup-container .chakra-input {
+  min-width: 0;
+}
+
+.popup-container .chakra-stack {
+  width: 100%;
+}
+
+.popup-container .chakra-form-control {
+  width: 100%;
+}
+
+/* Ensure buttons and interactive elements are properly sized */
+.popup-container .chakra-button {
+  white-space: nowrap;
+}
+
+/* Prevent horizontal scrolling */
+body,
+#root {
+  overflow-x: hidden;
+}
