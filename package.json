@@ -36,7 +36,6 @@
   },
   "engines": {
     "node": ">=20.0.0",
-    "npm": ">=8.0.0",
     "yarn": ">=1.22.0"
   },
   "engineStrict": true
