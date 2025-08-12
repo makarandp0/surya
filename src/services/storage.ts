@@ -3,7 +3,7 @@
  * Handles persistent storage of encrypted secrets and optionally master password
  */
 
-export interface StoredSession {
+interface StoredSession {
   version?: number; // Storage format version
   encryptedSecretsFile?: string; // Base64 encoded encrypted data
   encryptedMasterPassword?: string; // Optional: encrypted password for auto-login

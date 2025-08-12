@@ -8,14 +8,12 @@ import {
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
-import { SecretEntry } from '../crypto';
 import { UnifiedSectionProps } from '../types/credential';
 import { useVaultSearch } from '../hooks/useVaultSearch';
 import { useTotpTimer } from '../hooks/useTotpTimer';
 import { CredentialCardComponent } from './CredentialCard';
 import { VaultSearch } from './VaultSearch';
 import { TotpTimer } from './TotpTimer';
-import { SecretsBrowser } from './SecretsBrowser';
 
 export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
   masterPassword,
@@ -36,14 +34,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
     credentialCards.length > 0,
     () => updateTotpCodes(), // Update TOTP codes
   );
-
-  const handleSecretClick = (secret: SecretEntry) => {
-    // Set the query to match this secret entry
-    // Prefer username if available, otherwise use the secret name
-    const searchTerm =
-      secret.username || secret.website || secret.name.split(':')[0];
-    setQuery(searchTerm);
-  };
 
   return (
     <VStack spacing={2} w="full">
@@ -100,10 +90,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
         </Box>
       )}
 
-      {/* Secrets Browser - only show when not searching */}
-      {!query.trim() && (
-        <SecretsBrowser secrets={secrets} onSecretClick={handleSecretClick} />
-      )}
+      {/* Secrets browser removed */}
     </VStack>
   );
 };

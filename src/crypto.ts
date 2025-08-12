@@ -222,7 +222,7 @@ export interface SecretEntry {
   username?: string;
 }
 
-export interface SecretsFile {
+interface SecretsFile {
   v: number;
   ts: number;
   d: SecretEntry[];
