@@ -17,6 +17,7 @@ ChromePass is a unified password manager and TOTP authenticator that provides:
 
 - Deterministic passwords using PBKDF2-SHA256 (200,000 iterations)
 - Configurable length (8-32 characters) and symbol inclusion
+- Domain and username-specific passwords for unique credentials per account
 - Domain normalization for consistent results
 - Same inputs always produce the same password
 
@@ -26,12 +27,14 @@ ChromePass is a unified password manager and TOTP authenticator that provides:
 - Automatic domain matching to stored secrets
 - 30-second refresh with visual countdown
 - Compatible with existing TOTP backup formats
+- Multiple accounts per website supported
 
 ### 🛡️ Security
 
 - AES-256-GCM file encryption with PBKDF2 key derivation
 - Master password never stored or transmitted
 - All cryptographic operations performed locally
+- Username-scoped password generation for enhanced security
 - Open source and auditable
 
 ## Getting Started
@@ -63,20 +66,22 @@ ChromePass is a unified password manager and TOTP authenticator that provides:
 ### Generating Credentials
 
 1. **Enter Domain**: Type the website domain (auto-detected from active tab)
-2. **Configure Password**: Adjust length and symbols as needed
-3. **Click Generate**: Get both password and 2FA code (if available)
+2. **Automatic Generation**: Passwords and 2FA codes are generated automatically for all matching accounts
+3. **Multiple Accounts**: See all accounts for the domain with unique passwords based on username
+4. **Browse Secrets**: Use the collapsible secrets browser to find and select specific accounts
 
 ### Domain Matching
 
 ChromePass intelligently matches domains to your stored secrets:
 
-- `google.com` matches `Google:user@gmail.com`
-- `github.com` matches `GitHub:username`
+- Explicit `website` field takes priority (e.g., `"website": "google.com"`)
+- Fallback to name-based matching: `google.com` matches `Google:user@gmail.com`
 - Handles subdomains and various naming conventions
+- Supports multiple accounts per domain with unique usernames
 
 ## File Format
 
-Compatible with existing TOTP backup formats:
+Compatible with existing TOTP backup formats, with optional enhancements:
 
 ```json
 {
@@ -86,11 +91,31 @@ Compatible with existing TOTP backup formats:
     {
       "name": "Google:user@gmail.com",
       "secret": "JBSWY3DPEHPK3PXP",
-      "color": "#4285f4"
+      "color": "#4285f4",
+      "website": "google.com",
+      "username": "user@gmail.com"
+    },
+    {
+      "name": "Google:work@company.com",
+      "secret": "JBSWY3DPEHPK3PXQ",
+      "color": "#4285f4",
+      "website": "google.com",
+      "username": "work@company.com"
+    },
+    {
+      "name": "Legacy Entry",
+      "secret": "LEGACY123456789",
+      "color": "#888888"
     }
   ]
 }
 ```
+
+### New Optional Fields
+
+- `website`: Explicit domain for matching (e.g., "google.com")
+- `username`: Username for unique password generation per account
+- Backward compatible: entries without these fields use name-based matching
 
 ## Testing & Type Checking
 

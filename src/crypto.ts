@@ -54,12 +54,14 @@ const mapBytesToCharset = (
 export const derivePassword = async ({
   masterKey,
   domain,
+  username = '',
   length = 16,
   includeSymbols = false,
   iterations = 200000,
 }: {
   masterKey: string;
   domain: string;
+  username?: string;
   length?: number;
   includeSymbols?: boolean;
   iterations?: number;
@@ -72,7 +74,8 @@ export const derivePassword = async ({
   }
 
   const keyMaterial = await getKeyMaterial(masterKey);
-  const salt = te.encode(`site:${domain}`);
+  // Include username in the salt for unique passwords per user
+  const salt = te.encode(`site:${domain}:${username}`);
   // Derive 64 bytes to have enough entropy for mapping
   const bits = await crypto.subtle.deriveBits(
     {
@@ -215,6 +218,8 @@ export interface SecretEntry {
   color?: string;
   passwordLength?: number;
   includeSymbols?: boolean;
+  website?: string;
+  username?: string;
 }
 
 export interface SecretsFile {

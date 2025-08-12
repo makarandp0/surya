@@ -48,6 +48,57 @@ describe('derivePassword', () => {
     expect(a).toBe(b);
   });
 
+  it('generates different passwords for different usernames', async () => {
+    const passwordNoUser = await derivePassword({
+      masterKey,
+      domain,
+      length: 16,
+      includeSymbols: false,
+      iterations: 10_000,
+    });
+    const passwordUser1 = await derivePassword({
+      masterKey,
+      domain,
+      username: 'user1@example.com',
+      length: 16,
+      includeSymbols: false,
+      iterations: 10_000,
+    });
+    const passwordUser2 = await derivePassword({
+      masterKey,
+      domain,
+      username: 'user2@example.com',
+      length: 16,
+      includeSymbols: false,
+      iterations: 10_000,
+    });
+
+    expect(passwordNoUser).not.toBe(passwordUser1);
+    expect(passwordUser1).not.toBe(passwordUser2);
+    expect(passwordNoUser).not.toBe(passwordUser2);
+  });
+
+  it('is deterministic for same domain and username combination', async () => {
+    const username = 'testuser@example.com';
+    const a = await derivePassword({
+      masterKey,
+      domain,
+      username,
+      length: 16,
+      includeSymbols: false,
+      iterations: 10_000,
+    });
+    const b = await derivePassword({
+      masterKey,
+      domain,
+      username,
+      length: 16,
+      includeSymbols: false,
+      iterations: 10_000,
+    });
+    expect(a).toBe(b);
+  });
+
   it('changes when domain changes', async () => {
     const a = await derivePassword({
       masterKey,
