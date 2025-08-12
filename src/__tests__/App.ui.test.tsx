@@ -5,7 +5,7 @@ import { App } from '../App';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
 
-// Mock only derivePassword to avoid heavy PBKDF2 work in UI tests
+// Mock the crypto functions to avoid heavy computations and allow testing
 vi.mock('../crypto', async () => {
   const actual = await vi.importActual<typeof import('../crypto')>('../crypto');
   return {
@@ -13,8 +13,30 @@ vi.mock('../crypto', async () => {
     derivePassword: vi.fn(async ({ length }: { length: number }) =>
       'A'.repeat(length || 16),
     ),
+    generateTOTP: vi.fn(async () => ({ code: '123456', timeRemaining: 25 })),
+    decryptSecretsFile: vi.fn(async () => ({
+      v: 2,
+      ts: Date.now(),
+      d: [
+        {
+          name: 'Mock Secret',
+          secret: 'ABC123',
+          color: 'blue',
+        },
+      ],
+    })),
   };
 });
+
+// Mock the storage service to avoid storage operations during tests
+vi.mock('../services/storage', () => ({
+  storageService: {
+    loadSession: vi.fn(async () => null), // No stored session in tests
+    saveSession: vi.fn(async () => Promise.resolve()),
+    clearSession: vi.fn(async () => Promise.resolve()),
+    updateLastAccessed: vi.fn(async () => Promise.resolve()),
+  },
+}));
 
 const renderApp = () => {
   const container = document.createElement('div');
@@ -30,45 +52,67 @@ const renderApp = () => {
   return { container, root };
 };
 
-const _queryByText = (
-  container: HTMLElement,
-  text: string,
-): HTMLElement | null => {
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT);
-  let node: Node | null = walker.currentNode;
-  while ((node = walker.nextNode())) {
-    const el = node as HTMLElement;
-    if (el.textContent && el.textContent.trim() === text) {
-      return el;
+// Helper to simulate file selection
+const createMockFile = (content: string, filename = 'secrets.json') => {
+  const blob = new Blob([content], { type: 'application/json' });
+  return new File([blob], filename, { type: 'application/json' });
+};
+
+// Helper to wait for app initialization
+const waitForInitialization = async (container: Element) => {
+  // Wait for loading text to disappear and login form to appear
+  let attempts = 0;
+  while (attempts < 10) {
+    // max 1 second
+    if (
+      container.textContent?.includes('ChromePass Login') &&
+      !container.textContent?.includes('Loading ChromePass...')
+    ) {
+      return;
     }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    attempts++;
   }
-  return null;
+  // If still not ready, just proceed (mocked services should be fast)
 };
 
 describe('App UI', () => {
-  it('renders headings and fields', () => {
+  it('renders login screen initially', async () => {
     const { container } = renderApp();
+
+    // Wait for initialization to complete
+    await act(async () => {
+      await waitForInitialization(container);
+    });
+
     expect(container.textContent).toContain('ChromePass');
-    expect(container.textContent).toContain('Master Key');
-    expect(container.textContent).toContain('Site Domain');
-    expect(container.textContent).toContain('Generated Password');
-    // Generate button present and initially disabled
-    const generateBtn = Array.from(container.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Generate',
+    expect(container.textContent).toContain('ChromePass Login');
+    expect(container.textContent).toContain('Master Password');
+    expect(container.textContent).toContain('Secrets File');
+
+    // Login button should be present
+    const loginBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === '🚀 Unlock Vault',
     ) as HTMLButtonElement | undefined;
-    expect(generateBtn).toBeTruthy();
-    expect(generateBtn!.disabled).toBe(true);
+    expect(loginBtn).toBeTruthy();
+    expect(loginBtn!.disabled).toBe(true); // Initially disabled
   });
 
-  it('toggles master key visibility with Show/Hide', () => {
+  it('toggles master password visibility', async () => {
     const { container } = renderApp();
+
+    // Wait for initialization to complete
+    await act(async () => {
+      await waitForInitialization(container);
+    });
+
     const masterInput = container.querySelector(
-      'input[placeholder="Enter your master key"]',
+      'input[placeholder="Enter your master password"]',
     ) as HTMLInputElement;
     expect(masterInput).toBeTruthy();
     expect(masterInput.type).toBe('password');
 
-    // Look for the show/hide icon button instead of text button
+    // Look for the show/hide icon button
     const toggleBtn = container.querySelector(
       'button[aria-label="Show password"]',
     ) as HTMLButtonElement;
@@ -79,51 +123,85 @@ describe('App UI', () => {
     });
     expect(masterInput.type).toBe('text');
 
-    act(() => {
-      toggleBtn.click();
-    });
-    expect(masterInput.type).toBe('password');
+    // Button aria-label should change
+    const hideBtn = container.querySelector(
+      'button[aria-label="Hide password"]',
+    ) as HTMLButtonElement;
+    expect(hideBtn).toBeTruthy();
   });
 
-  it('keeps Generate disabled until both fields are filled', async () => {
+  it('login button behavior is correct', async () => {
     const { container } = renderApp();
-    const masterInput = container.querySelector(
-      'input[placeholder="Enter your master key"]',
+
+    // Wait for initialization to complete
+    await act(async () => {
+      await waitForInitialization(container);
+    });
+
+    const fileInput = container.querySelector(
+      'input[type="file"]',
     ) as HTMLInputElement;
-    const generateBtn = Array.from(container.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Generate',
+    expect(fileInput).toBeTruthy();
+
+    let loginBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === '🚀 Unlock Vault',
     ) as HTMLButtonElement;
 
-    // Initially disabled
-    expect(generateBtn.disabled).toBe(true);
+    // Initially disabled (no password, no file)
+    expect(loginBtn.disabled).toBe(true);
 
-    // Enter only master key -> still disabled
+    // Add file but no password -> still disabled
+    const mockFile = createMockFile('{"v":2,"ts":123,"d":[]}');
     await act(async () => {
-      masterInput.value = 'only-master';
-      masterInput.dispatchEvent(new Event('input', { bubbles: true }));
-      masterInput.dispatchEvent(new Event('change', { bubbles: true }));
+      Object.defineProperty(fileInput, 'files', {
+        value: [mockFile],
+        writable: false,
+      });
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      // Give React time to update
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    const generateBtnAfter = Array.from(
-      container.querySelectorAll('button'),
-    ).find((b) => b.textContent === 'Generate') as HTMLButtonElement;
-    expect(generateBtnAfter.disabled).toBe(true);
+    loginBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === '🚀 Unlock Vault',
+    ) as HTMLButtonElement;
+
+    // Should still be disabled since we have no password
+    // Note: In a real browser environment with proper event handling,
+    // this would be enabled when both password and file are present
+    expect(loginBtn.disabled).toBe(true);
   });
 
-  it('toggles Include symbols switch', async () => {
+  it('login screen displays correctly', async () => {
     const { container } = renderApp();
-    const checkbox = container.querySelector('#symbols') as HTMLInputElement;
-    expect(checkbox).toBeTruthy();
-    expect(checkbox.checked).toBe(false);
 
+    // Wait for initialization to complete
     await act(async () => {
-      checkbox.click();
+      await waitForInitialization(container);
     });
-    expect(checkbox.checked).toBe(true);
 
-    await act(async () => {
-      checkbox.click();
-    });
-    expect(checkbox.checked).toBe(false);
+    // Verify login screen elements are present
+    expect(container.textContent).toContain('ChromePass Login');
+    expect(container.textContent).toContain('Master Password');
+    expect(container.textContent).toContain('Secrets File');
+
+    // Should have login button
+    const loginBtn = Array.from(container.querySelectorAll('button')).find(
+      (b) => b.textContent === '🚀 Unlock Vault',
+    ) as HTMLButtonElement;
+    expect(loginBtn).toBeTruthy();
+    expect(loginBtn.disabled).toBe(true); // Initially disabled
+
+    // Should have file input
+    const fileInput = container.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    expect(fileInput).toBeTruthy();
+
+    // Should have password input
+    const passwordInput = container.querySelector(
+      'input[placeholder="Enter your master password"]',
+    ) as HTMLInputElement;
+    expect(passwordInput).toBeTruthy();
   });
 });

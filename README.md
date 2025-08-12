@@ -1,71 +1,110 @@
-ChromePass — MV3 Vite + React + Chakra
+# ChromePass — Unified Password & TOTP Manager
 
-Overview
+## Overview
 
-- Deterministic password manager: generates a site-specific password from a master key and the site domain.
-- TOTP authenticator: generates time-based one-time passwords with import support for TOTP app backups.
-- No storage, no network, entirely local in the popup.
-- Built with Vite + React + Chakra UI. Chrome Manifest V3.
+ChromePass is a unified password manager and TOTP authenticator that provides:
 
-Getting Started
+- **Unified Login Experience**: Single master password + encrypted secrets file
+- **Deterministic Password Generation**: Site-specific passwords derived from master key and domain
+- **TOTP Authentication**: Time-based one-time passwords with automatic domain matching
+- **Local Encryption**: AES-256-GCM encryption, all processing happens locally
+- **No Cloud Storage**: Everything stays on your device
+- **Built with Modern Stack**: Vite + React + Chakra UI, Chrome Manifest V3
+
+## Features
+
+### 🔐 Password Generation
+
+- Deterministic passwords using PBKDF2-SHA256 (200,000 iterations)
+- Configurable length (8-32 characters) and symbol inclusion
+- Domain normalization for consistent results
+- Same inputs always produce the same password
+
+### 🔢 TOTP Authentication
+
+- RFC 6238 compliant time-based codes
+- Automatic domain matching to stored secrets
+- 30-second refresh with visual countdown
+- Compatible with existing TOTP backup formats
+
+### 🛡️ Security
+
+- AES-256-GCM file encryption with PBKDF2 key derivation
+- Master password never stored or transmitted
+- All cryptographic operations performed locally
+- Open source and auditable
+
+## Getting Started
 
 **Note**: This project uses yarn only. npm commands are blocked to ensure consistency.
 
-- Install deps: yarn install
-- Dev (web preview): yarn dev
+- Install deps: `yarn install`
+- Dev (web preview): `yarn dev`
   - Note: chrome.\* APIs are unavailable in dev. Domain field is editable.
-- Build extension: yarn build
+- Build extension: `yarn build`
 - Load in Chrome: chrome://extensions → Enable Developer mode → Load unpacked → select the dist/ folder.
 
-Testing & Type Checking
+## Usage
 
-- Type check: yarn typecheck
-- Run tests: yarn test
-- Watch tests: yarn test:watch
-- Coverage report: yarn coverage (outputs to coverage/)
+### Initial Setup
 
-Versioning
+1. **Prepare Your Secrets File** (optional):
+
+   ```bash
+   # Encrypt existing TOTP backup
+   node scripts/encrypt-secrets.mjs backup.json encrypted-secrets.txt your-password
+   ```
+
+2. **Login Process**:
+   - Enter your master password
+   - Select your encrypted secrets file (or use unencrypted for backward compatibility)
+   - Click "🚀 Unlock Vault"
+
+### Generating Credentials
+
+1. **Enter Domain**: Type the website domain (auto-detected from active tab)
+2. **Configure Password**: Adjust length and symbols as needed
+3. **Click Generate**: Get both password and 2FA code (if available)
+
+### Domain Matching
+
+ChromePass intelligently matches domains to your stored secrets:
+
+- `google.com` matches `Google:user@gmail.com`
+- `github.com` matches `GitHub:username`
+- Handles subdomains and various naming conventions
+
+## File Format
+
+Compatible with existing TOTP backup formats:
+
+```json
+{
+  "v": 2,
+  "ts": 1640995200000,
+  "d": [
+    {
+      "name": "Google:user@gmail.com",
+      "secret": "JBSWY3DPEHPK3PXP",
+      "color": "#4285f4"
+    }
+  ]
+}
+```
+
+## Testing & Type Checking
+
+- Type check: `yarn typecheck`
+- Run tests: `yarn test`
+- Watch tests: `yarn test:watch`
+- Coverage report: `yarn coverage` (outputs to coverage/)
+
+## Versioning
 
 - Source of truth: `package.json#version`.
 - Manifest sync: `scripts/sync-version.mjs` writes the same version into `public/manifest.json` (runs automatically before `yarn build`).
 - Deploy bump: the GitHub Pages deploy workflow auto-bumps the patch version on pushes to `master`, commits the change, and creates a tag `vX.Y.Z`.
 - Releases: the release workflow syncs the manifest version to the tag (e.g., `v1.2.3`) before building the ZIP.
-
-Usage
-
-**Password Mode:**
-
-- Click the extension icon to open the popup.
-- Enter your Master Key. We do not store it.
-- The Site Domain auto-fills from the active tab; you can edit it.
-- Choose length and whether to include symbols, then Generate.
-- Click Copy to put the password on your clipboard.
-
-**TOTP Mode:**
-
-- Switch to TOTP mode using the radio buttons.
-- **Import Method**: Click "Import File" to import TOTP secrets from backup files (supports TOTP app JSON format).
-- **Manual Method**: Enter a Base32 secret key directly.
-- Select from imported accounts or use manual entry.
-- Generate TOTP codes with automatic refresh and time remaining indicator.
-- Click Copy to put the code on your clipboard.
-
-TOTP Import Support
-
-- Supports JSON backup files from TOTP apps in the format:
-  ```json
-  {
-    "v": 2,
-    "ts": timestamp,
-    "d": [
-      {
-        "name": "Account Name",
-        "secret": "BASE32SECRET",
-        "color": "#HexColor"
-      }
-    ]
-  }
-  ```
 - A sample file is included at `public/sample-totp-backup.json` for testing.
 
 Derivation Details

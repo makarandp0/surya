@@ -207,3 +207,142 @@ export const generateTOTP = async ({
     );
   }
 };
+
+// Types for the secrets file
+export interface SecretEntry {
+  name: string;
+  secret: string;
+  color?: string;
+}
+
+export interface SecretsFile {
+  v: number;
+  ts: number;
+  d: SecretEntry[];
+}
+
+// Encrypt secrets file with master password
+export const encryptSecretsFile = async (
+  secretsFile: SecretsFile,
+  masterPassword: string,
+): Promise<string> => {
+  if (!masterPassword) {
+    throw new Error('Master password is required');
+  }
+
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  // Import key material for PBKDF2
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    te.encode(masterPassword),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveKey'], // Add deriveKey usage
+  );
+
+  // Derive key for AES-GCM encryption
+  const key = await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      hash: 'SHA-256',
+      salt,
+      iterations: 100000,
+    },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt'],
+  );
+
+  const data = te.encode(JSON.stringify(secretsFile));
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    data,
+  );
+
+  // Combine salt + iv + encrypted data
+  const combined = new Uint8Array(
+    salt.length + iv.length + encrypted.byteLength,
+  );
+  combined.set(salt, 0);
+  combined.set(iv, salt.length);
+  combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+  // Return base64 encoded result
+  return btoa(String.fromCharCode(...combined));
+};
+
+// Decrypt secrets file with master password
+export const decryptSecretsFile = async (
+  encryptedData: string,
+  masterPassword: string,
+): Promise<SecretsFile> => {
+  if (!masterPassword) {
+    throw new Error('Master password is required');
+  }
+  if (!encryptedData) {
+    throw new Error('Encrypted data is required');
+  }
+
+  try {
+    // Decode base64
+    const combined = new Uint8Array(
+      atob(encryptedData)
+        .split('')
+        .map((c) => c.charCodeAt(0)),
+    );
+
+    // Extract salt, iv, and encrypted data
+    const salt = combined.slice(0, 16);
+    const iv = combined.slice(16, 28);
+    const encrypted = combined.slice(28);
+
+    // Import key material for PBKDF2
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      te.encode(masterPassword),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey'], // Add deriveKey usage
+    );
+
+    // Derive the same key
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        hash: 'SHA-256',
+        salt,
+        iterations: 100000,
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['decrypt'],
+    );
+
+    // Decrypt
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      encrypted,
+    );
+
+    const text = new TextDecoder().decode(decrypted);
+    return JSON.parse(text);
+  } catch (_decryptError) {
+    // If decryption fails, try parsing as plain JSON (for backward compatibility)
+    try {
+      const plainFile = JSON.parse(encryptedData);
+      if (plainFile.d && Array.isArray(plainFile.d)) {
+        return plainFile;
+      } else {
+        throw new Error('Invalid file format');
+      }
+    } catch (_parseError) {
+      throw new Error('Invalid file format or incorrect password');
+    }
+  }
+};

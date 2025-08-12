@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { derivePassword, normalizeDomainFromUrl } from '../crypto';
+import {
+  derivePassword,
+  normalizeDomainFromUrl,
+  generateTOTP,
+  encryptSecretsFile,
+  decryptSecretsFile,
+  SecretEntry,
+} from '../crypto';
 
 describe('normalizeDomainFromUrl', () => {
   it('strips protocol and www, lowercases host', () => {
@@ -99,5 +106,118 @@ describe('derivePassword', () => {
       iterations: 10_000,
     });
     expect(allowed.test(pwd)).toBe(true);
+  });
+});
+
+describe('generateTOTP', () => {
+  it('generates valid TOTP codes', async () => {
+    const secret = 'JBSWY3DPEHPK3PXP';
+    const result = await generateTOTP({ secret });
+
+    expect(result.code).toMatch(/^\d{6}$/);
+    expect(result.timeRemaining).toBeGreaterThan(0);
+    expect(result.timeRemaining).toBeLessThanOrEqual(30);
+  });
+
+  it('generates consistent codes for the same timestamp', async () => {
+    const secret = 'JBSWY3DPEHPK3PXP';
+    const timestamp = 1234567890;
+
+    const result1 = await generateTOTP({ secret, timestamp });
+    const result2 = await generateTOTP({ secret, timestamp });
+
+    expect(result1.code).toBe(result2.code);
+    expect(result1.timeRemaining).toBe(result2.timeRemaining);
+  });
+
+  it('throws on empty secret', async () => {
+    await expect(generateTOTP({ secret: '' })).rejects.toThrow(
+      'Missing TOTP secret',
+    );
+  });
+
+  it('throws on invalid secret', async () => {
+    await expect(generateTOTP({ secret: 'XX' })).rejects.toThrow(
+      'Invalid TOTP secret length',
+    );
+  });
+});
+
+describe('encryptSecretsFile and decryptSecretsFile', () => {
+  const testSecrets: SecretEntry[] = [
+    {
+      name: 'Google:user@gmail.com',
+      secret: 'JBSWY3DPEHPK3PXP',
+      color: '#4285f4',
+    },
+    { name: 'Facebook:user', secret: 'ABCDEFGHIJKLMNOP' },
+  ];
+
+  const testSecretsFile = {
+    v: 2,
+    ts: Date.now(),
+    d: testSecrets,
+  };
+
+  const masterPassword = 'test-password-123';
+
+  it('encrypts and decrypts secrets file successfully', async () => {
+    const encrypted = await encryptSecretsFile(testSecretsFile, masterPassword);
+    expect(typeof encrypted).toBe('string');
+    expect(encrypted.length).toBeGreaterThan(0);
+
+    const decrypted = await decryptSecretsFile(encrypted, masterPassword);
+    expect(decrypted.v).toBe(testSecretsFile.v);
+    expect(decrypted.ts).toBe(testSecretsFile.ts);
+    expect(decrypted.d).toHaveLength(testSecrets.length);
+    expect(decrypted.d[0].name).toBe(testSecrets[0].name);
+    expect(decrypted.d[0].secret).toBe(testSecrets[0].secret);
+    expect(decrypted.d[0].color).toBe(testSecrets[0].color);
+  });
+
+  it('fails decryption with wrong password', async () => {
+    const encrypted = await encryptSecretsFile(testSecretsFile, masterPassword);
+
+    await expect(
+      decryptSecretsFile(encrypted, 'wrong-password'),
+    ).rejects.toThrow('Invalid file format or incorrect password');
+  });
+
+  it('throws on empty master password for encryption', async () => {
+    await expect(encryptSecretsFile(testSecretsFile, '')).rejects.toThrow(
+      'Master password is required',
+    );
+  });
+
+  it('throws on empty master password for decryption', async () => {
+    await expect(decryptSecretsFile('some-data', '')).rejects.toThrow(
+      'Master password is required',
+    );
+  });
+
+  it('throws on empty encrypted data', async () => {
+    await expect(decryptSecretsFile('', masterPassword)).rejects.toThrow(
+      'Encrypted data is required',
+    );
+  });
+
+  it('produces different encrypted output each time', async () => {
+    const encrypted1 = await encryptSecretsFile(
+      testSecretsFile,
+      masterPassword,
+    );
+    const encrypted2 = await encryptSecretsFile(
+      testSecretsFile,
+      masterPassword,
+    );
+
+    // Should be different due to random salt and IV
+    expect(encrypted1).not.toBe(encrypted2);
+
+    // But both should decrypt to the same content
+    const decrypted1 = await decryptSecretsFile(encrypted1, masterPassword);
+    const decrypted2 = await decryptSecretsFile(encrypted2, masterPassword);
+
+    expect(decrypted1.d).toEqual(decrypted2.d);
   });
 });
