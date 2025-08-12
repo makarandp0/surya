@@ -5,8 +5,7 @@ export const isChromeExtensionEnv = (): boolean => {
   );
 };
 
-export const fetchActiveTabDomain = async (
-): Promise<string> => {
+export const fetchActiveTabDomain = async (): Promise<string> => {
   if (!isChromeExtensionEnv()) {
     return '';
   }
@@ -16,9 +15,13 @@ export const fetchActiveTabDomain = async (
         const tab = tabs && tabs[0];
         const url = (tab as chrome.tabs.Tab | undefined)?.url || '';
         // Lazy import to avoid circular deps
-        import('../crypto').then(({ normalizeDomainFromUrl }) => {
-          resolve(normalizeDomainFromUrl(url));
-        }).catch(() => resolve(''));
+        import('../crypto')
+          .then(({ normalizeDomainFromUrl }) => {
+            resolve(normalizeDomainFromUrl(url));
+          })
+          .catch(() => {
+            resolve('');
+          });
       });
     } catch {
       resolve('');

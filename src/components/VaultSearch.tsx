@@ -27,27 +27,63 @@ export const VaultSearch: React.FC<VaultSearchProps> = ({
   totalCount = 0,
 }) => {
   const [inputValue, setInputValue] = useState(query);
+  const [instanceId] = useState(() => Math.random().toString(36).slice(2, 8));
   const debouncedInputValue = useDebounce(inputValue, 300);
 
-  // Update input value when query prop changes
+  // Sync local input with query prop
   useEffect(() => {
     setInputValue(query);
-  }, [query]);
+  }, [query, instanceId]);
 
-  // Call onQueryChange when debounced value changes
+  // Notify parent when debounced input changes.
+  // Important: only propagate when debounced value matches the current input
+  // to avoid sending a stale value after a programmatic update (e.g., refresh domain).
   useEffect(() => {
-    if (debouncedInputValue !== query) {
+    if (debouncedInputValue === inputValue && debouncedInputValue !== query) {
       onQueryChange(debouncedInputValue);
     }
-  }, [debouncedInputValue, query, onQueryChange]);
+  }, [debouncedInputValue, inputValue, query, onQueryChange, instanceId]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setInputValue(next);
+  };
 
   const handleRefreshDomain = async () => {
-    const domain = await fetchActiveTabDomain();
-    if (domain) {
-      setInputValue(domain);
-      onQueryChange(domain);
+    try {
+      const domain = await fetchActiveTabDomain();
+      if (domain) {
+        setInputValue(domain);
+        onQueryChange(domain);
+      }
+    } catch (_err) {
+      // ignore
     }
   };
+
+  // Optional: try to prefill once on mount if query is empty
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (query.trim()) {
+        return;
+      }
+      const domain = await fetchActiveTabDomain();
+      if (cancelled) {
+        return;
+      }
+      if (domain) {
+        setInputValue(domain);
+        onQueryChange(domain);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instanceId]);
+
+  // (No logging)
 
   // Generate status text
   const getStatusText = () => {
@@ -57,7 +93,11 @@ export const VaultSearch: React.FC<VaultSearchProps> = ({
     if (inputValue !== query) {
       return 'Searching...';
     }
-    if (query.trim() && filteredCount !== undefined && totalCount !== undefined) {
+    if (
+      query.trim() &&
+      filteredCount !== undefined &&
+      totalCount !== undefined
+    ) {
       return `Found ${filteredCount} of ${totalCount} entries`;
     }
     return 'Search your vault';
@@ -77,7 +117,7 @@ export const VaultSearch: React.FC<VaultSearchProps> = ({
           <Input
             placeholder="Search domains, usernames, sites..."
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={handleInputChange}
             bg="gray.50"
             borderColor="gray.200"
             _focus={{ borderColor: 'blue.400', bg: 'white' }}
