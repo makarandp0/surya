@@ -86,9 +86,8 @@ describe('App UI', () => {
     });
 
     expect(container.textContent).toContain('ChromePass');
-    expect(container.textContent).toContain('ChromePass Login');
-    expect(container.textContent).toContain('Master Password');
-    expect(container.textContent).toContain('Secrets File');
+    expect(container.textContent).toContain('Remember password');
+    expect(container.textContent).toContain('Unlock Vault');
 
     // Login button should be present
     const loginBtn = Array.from(container.querySelectorAll('button')).find(
@@ -107,7 +106,7 @@ describe('App UI', () => {
     });
 
     const masterInput = container.querySelector(
-      'input[placeholder="Enter your master password"]',
+      'input[placeholder*="Enter your master password"]',
     ) as HTMLInputElement;
     expect(masterInput).toBeTruthy();
     expect(masterInput.type).toBe('password');
@@ -181,9 +180,8 @@ describe('App UI', () => {
     });
 
     // Verify login screen elements are present
-    expect(container.textContent).toContain('ChromePass Login');
-    expect(container.textContent).toContain('Master Password');
-    expect(container.textContent).toContain('Secrets File');
+    expect(container.textContent).toContain('Remember password');
+    expect(container.textContent).toContain('Unlock Vault');
 
     // Should have login button
     const loginBtn = Array.from(container.querySelectorAll('button')).find(
@@ -200,7 +198,7 @@ describe('App UI', () => {
 
     // Should have password input
     const passwordInput = container.querySelector(
-      'input[placeholder="Enter your master password"]',
+      'input[placeholder*="Enter your master password"]',
     ) as HTMLInputElement;
     expect(passwordInput).toBeTruthy();
   });

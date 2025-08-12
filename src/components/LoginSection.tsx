@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   FormControl,
-  FormLabel,
   HStack,
   IconButton,
   Input,
@@ -189,16 +188,13 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
   const canQuickLogin = Boolean(masterPassword && hasStoredSession);
 
   return (
-    <VStack spacing={6}>
-      {/* Header */}
+    <VStack spacing={3}>
+      {/* Instructions */}
       <Box textAlign="center">
-        <Text fontSize="lg" fontWeight="bold" color="gray.800" mb={2}>
-          🔓 ChromePass Login
-        </Text>
-        <Text fontSize="sm" color="gray.600">
+        <Text fontSize="xs" color="gray.600">
           {hasStoredSession
-            ? 'Enter your master password to restore your session'
-            : 'Enter your master password and select your encrypted secrets file'}
+            ? 'Enter password to restore session'
+            : 'Enter password and select encrypted secrets file'}
         </Text>
       </Box>
 
@@ -207,25 +203,17 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
         <Box
           w="full"
           bg="green.50"
-          borderRadius="lg"
+          borderRadius="md"
           borderWidth="1px"
           borderColor="green.200"
-          p={4}
+          p={3}
           shadow="sm"
         >
           <FormControl>
-            <FormLabel
-              fontSize="sm"
-              fontWeight="semibold"
-              color="green.700"
-              mb={2}
-            >
-              🔑 Quick Login - Session Restored
-            </FormLabel>
-            <InputGroup>
+            <InputGroup size="sm">
               <Input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your master password"
+                placeholder="🔑 Enter your master password (session will be restored)"
                 value={masterPassword}
                 onChange={(e) => setMasterPassword(e.target.value)}
                 autoFocus
@@ -236,27 +224,25 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                 onKeyPress={(e) =>
                   e.key === 'Enter' && canQuickLogin && handleQuickLogin()
                 }
+                fontSize="sm"
               />
-              <InputRightElement width="4.5rem">
+              <InputRightElement width="4rem">
                 <IconButton
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
-                  size="sm"
+                  size="xs"
                   variant="ghost"
                   onClick={() => setShowPassword(!showPassword)}
                 />
               </InputRightElement>
             </InputGroup>
-            <Text fontSize="xs" color="green.600" mt={1}>
-              Using saved session - no need to select file again
-            </Text>
           </FormControl>
 
           <Button
             colorScheme="green"
-            size="lg"
+            size="sm"
             w="full"
-            mt={3}
+            mt={2}
             onClick={handleQuickLogin}
             isDisabled={!canQuickLogin}
             isLoading={isLoading}
@@ -274,24 +260,16 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
           <Box
             w="full"
             bg="white"
-            borderRadius="lg"
+            borderRadius="md"
             borderWidth="1px"
-            p={4}
+            p={3}
             shadow="sm"
           >
             <FormControl>
-              <FormLabel
-                fontSize="sm"
-                fontWeight="semibold"
-                color="gray.700"
-                mb={2}
-              >
-                🔑 Master Password
-              </FormLabel>
-              <InputGroup>
+              <InputGroup size="sm">
                 <Input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your master password"
+                  placeholder="🔑 Enter your master password"
                   value={masterPassword}
                   onChange={(e) => setMasterPassword(e.target.value)}
                   autoFocus={!hasStoredSession}
@@ -302,22 +280,31 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                   onKeyPress={(e) =>
                     e.key === 'Enter' && canLogin && handleLogin()
                   }
+                  fontSize="sm"
                 />
-                <InputRightElement width="4.5rem">
+                <InputRightElement width="4rem">
                   <IconButton
                     aria-label={
                       showPassword ? 'Hide password' : 'Show password'
                     }
                     icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
-                    size="sm"
+                    size="xs"
                     variant="ghost"
                     onClick={() => setShowPassword(!showPassword)}
                   />
                 </InputRightElement>
               </InputGroup>
-              <Text fontSize="xs" color="gray.500" mt={1}>
-                This password will be used to decrypt your secrets file
-              </Text>
+              <Checkbox
+                isChecked={rememberPassword}
+                onChange={(e) => setRememberPassword(e.target.checked)}
+                colorScheme="blue"
+                size="sm"
+                mt={2}
+              >
+                <Text fontSize="xs" color="blue.700">
+                  Remember password for auto-login
+                </Text>
+              </Checkbox>
             </FormControl>
           </Box>
 
@@ -325,80 +312,48 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
           <Box
             w="full"
             bg="white"
-            borderRadius="lg"
+            borderRadius="md"
             borderWidth="1px"
-            p={4}
+            p={3}
             shadow="sm"
           >
             <FormControl>
-              <FormLabel
-                fontSize="sm"
-                fontWeight="semibold"
-                color="gray.700"
-                mb={2}
-              >
-                📁 Secrets File
-              </FormLabel>
-              <HStack>
+              <HStack spacing={2}>
                 <Input
                   value={selectedFile ? selectedFile.name : ''}
-                  placeholder="No file selected"
+                  placeholder="📁 Click to select your encrypted secrets file"
                   readOnly
                   bg="gray.50"
                   borderColor="gray.200"
                   _focus={{ borderColor: 'blue.400' }}
+                  cursor="pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                  fontSize="sm"
+                  size="sm"
                 />
-                <Button
-                  leftIcon={<AttachmentIcon />}
+                <IconButton
+                  aria-label="Select file"
+                  icon={<AttachmentIcon />}
                   onClick={() => fileInputRef.current?.click()}
                   colorScheme="blue"
                   variant="outline"
-                  size="md"
-                >
-                  Browse
-                </Button>
+                  size="sm"
+                />
               </HStack>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".json,.txt"
+                accept=".txt,.json"
                 onChange={handleFileSelect}
                 style={{ display: 'none' }}
               />
-              <Text fontSize="xs" color="gray.500" mt={1}>
-                Select your encrypted secrets file (.json format)
-              </Text>
             </FormControl>
-          </Box>
-
-          {/* Remember Password Option */}
-          <Box
-            w="full"
-            bg="blue.50"
-            borderRadius="lg"
-            borderWidth="1px"
-            borderColor="blue.200"
-            p={3}
-          >
-            <Checkbox
-              isChecked={rememberPassword}
-              onChange={(e) => setRememberPassword(e.target.checked)}
-              colorScheme="blue"
-              size="sm"
-            >
-              <Text fontSize="sm" color="blue.700">
-                Remember my password for auto-login
-              </Text>
-            </Checkbox>
-            <Text fontSize="xs" color="blue.600" mt={1}>
-              Your password will be securely encrypted and stored locally
-            </Text>
           </Box>
 
           {/* Login Button */}
           <Button
             colorScheme="blue"
-            size="lg"
+            size="sm"
             w="full"
             onClick={handleLogin}
             isDisabled={!canLogin}

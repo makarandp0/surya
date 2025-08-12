@@ -9,7 +9,6 @@ import {
   VStack,
   HStack,
   Icon,
-  Divider,
   Spinner,
   Alert,
   AlertIcon,
@@ -167,29 +166,27 @@ export const App = () => {
     <Container
       maxW={isChromeExtensionEnv() ? 'none' : 'sm'}
       w={isChromeExtensionEnv() ? '100%' : 'auto'}
-      p={4}
+      p={3}
       className={isChromeExtensionEnv() ? 'popup-container' : ''}
     >
-      <Stack spacing={4} className="scrollable-content">
+      <Stack spacing={3} className="scrollable-content">
         {/* Header Section */}
         <Box textAlign="center">
-          <HStack justify="center" spacing={2} mb={1}>
-            <Icon as={LockIcon} color="blue.500" boxSize={5} />
-            <Heading size="md" color="gray.800">
+          <HStack justify="center" spacing={2} mb={0.5}>
+            <Icon as={LockIcon} color="blue.500" boxSize={4} />
+            <Heading size="sm" color="gray.800">
               ChromePass
             </Heading>
           </HStack>
           <Text color="gray.600" fontSize="xs" fontWeight="medium">
-            Unified password & TOTP manager • Local encryption, no cloud storage
+            Unified password & TOTP manager
           </Text>
         </Box>
 
-        <Divider />
-
         {/* Error Alert */}
         {initError && (
-          <Alert status="error" borderRadius="md" fontSize="sm">
-            <AlertIcon />
+          <Alert status="error" borderRadius="md" fontSize="xs" py={2}>
+            <AlertIcon boxSize={3} />
             {initError}
           </Alert>
         )}
@@ -209,31 +206,9 @@ export const App = () => {
           />
         )}
 
-        <Divider />
-
         {/* Footer Section */}
-        <VStack spacing={1} align="center">
-          <Box
-            fontSize="xs"
-            color="gray.600"
-            textAlign="center"
-            bg="gray.50"
-            p={2}
-            borderRadius="md"
-            borderLeft="3px solid"
-            borderColor="blue.400"
-          >
-            <Text fontWeight="medium" mb={0.5}>
-              🔐 Security & Privacy
-            </Text>
-            <Text fontSize="xs" lineHeight="short">
-              {isLoggedIn
-                ? 'All cryptographic operations performed locally. Master password never stored.'
-                : 'Your data is encrypted with AES-256. Master password is your only key.'}
-            </Text>
-          </Box>
-
-          <Text fontSize="xs" color="gray.400" fontWeight="medium">
+        <VStack spacing={1} align="center" mt={2}>
+          <Text fontSize="2xs" color="gray.400" fontWeight="medium">
             v{pkg.version}
           </Text>
         </VStack>

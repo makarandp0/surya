@@ -17,7 +17,6 @@ import {
   CircularProgress,
   CircularProgressLabel,
   Badge,
-  Divider,
   Slider,
   SliderTrack,
   SliderFilledTrack,
@@ -249,38 +248,36 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
   const canGenerate = Boolean(domain && masterPassword);
 
   return (
-    <VStack spacing={4} w="full">
+    <VStack spacing={2} w="full">
       {/* Header with logout */}
-      <HStack justify="space-between" w="full">
-        <Text fontSize="lg" fontWeight="bold" color="gray.800">
-          🔓 Your Vault ({secrets.length} secrets)
+      <HStack justify="space-between" w="full" mb={1}>
+        <Text fontSize="md" fontWeight="bold" color="gray.800">
+          🔓 Vault ({secrets.length})
         </Text>
-        <Button size="sm" variant="outline" onClick={onLogout}>
+        <Button size="xs" variant="outline" onClick={onLogout}>
           Logout
         </Button>
       </HStack>
-
-      <Divider />
 
       {/* Main Domain Input */}
       <Box
         w="full"
         bg="white"
-        borderRadius="lg"
+        borderRadius="md"
         borderWidth="1px"
-        p={4}
+        p={3}
         shadow="sm"
       >
         <FormControl>
           <FormLabel
-            fontSize="sm"
+            fontSize="xs"
             fontWeight="semibold"
             color="gray.700"
-            mb={2}
+            mb={1}
           >
-            🌐 Website Domain
+            🌐 Website
           </FormLabel>
-          <HStack>
+          <HStack spacing={2}>
             <Input
               placeholder="example.com"
               value={domain}
@@ -293,6 +290,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
               onKeyPress={(e) =>
                 e.key === 'Enter' && canGenerate && handleGenerate()
               }
+              size="sm"
             />
             <IconButton
               aria-label="Use active tab"
@@ -300,7 +298,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
               onClick={handleRefreshDomain}
               colorScheme="blue"
               variant="outline"
-              size="md"
+              size="sm"
             />
           </HStack>
         </FormControl>
@@ -310,29 +308,29 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
       <Box
         w="full"
         bg="white"
-        borderRadius="lg"
+        borderRadius="md"
         borderWidth="1px"
-        p={4}
+        p={3}
         shadow="sm"
       >
-        <VStack spacing={3}>
+        <VStack spacing={2}>
           <HStack justify="space-between" w="full">
             <FormLabel
-              fontSize="sm"
+              fontSize="xs"
               fontWeight="semibold"
               color="gray.700"
               mb={0}
             >
-              🎛️ Password Length
+              🎛️ Length
             </FormLabel>
             <Badge
               colorScheme="blue"
               fontSize="xs"
               px={2}
-              py={1}
+              py={0.5}
               borderRadius="full"
             >
-              {passwordLength} chars
+              {passwordLength}
             </Badge>
           </HStack>
           <Slider
@@ -346,21 +344,19 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
             <SliderTrack bg="gray.200">
               <SliderFilledTrack />
             </SliderTrack>
-            <SliderThumb boxSize={3} />
+            <SliderThumb boxSize={2.5} />
           </Slider>
 
-          <Divider />
-
-          <HStack justify="space-between" w="full">
-            <HStack>
+          <HStack justify="space-between" w="full" pt={1}>
+            <HStack spacing={2}>
               <Switch
                 isChecked={includeSymbols}
                 onChange={(e) => setIncludeSymbols(e.target.checked)}
                 colorScheme="blue"
-                size="md"
+                size="sm"
               />
-              <FormLabel m={0} fontSize="sm" color="gray.700">
-                Include symbols (!@#$...)
+              <FormLabel m={0} fontSize="xs" color="gray.700">
+                Symbols
               </FormLabel>
             </HStack>
             <Button
@@ -368,8 +364,8 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
               onClick={handleGenerate}
               isDisabled={!canGenerate}
               isLoading={isGenerating}
-              loadingText="Generating..."
-              size="md"
+              loadingText="Gen..."
+              size="sm"
               fontWeight="semibold"
             >
               🔐 Generate
@@ -383,27 +379,27 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
         <Box
           w="full"
           bg="white"
-          borderRadius="lg"
+          borderRadius="md"
           borderWidth="1px"
-          p={4}
+          p={3}
           shadow="sm"
         >
-          <VStack spacing={4}>
-            <Text fontSize="md" fontWeight="semibold" color="gray.800">
-              🎯 Credentials for {credentials.domain}
+          <VStack spacing={2}>
+            <Text fontSize="sm" fontWeight="semibold" color="gray.800">
+              🎯 {credentials.domain}
             </Text>
 
             {/* Password */}
             <Box w="full">
-              <HStack justify="space-between" mb={2}>
-                <HStack>
-                  <LockIcon color="blue.500" boxSize={4} />
-                  <Text fontSize="sm" fontWeight="semibold" color="gray.700">
+              <HStack justify="space-between" mb={1}>
+                <HStack spacing={1}>
+                  <LockIcon color="blue.500" boxSize={3} />
+                  <Text fontSize="xs" fontWeight="semibold" color="gray.700">
                     Password
                   </Text>
                 </HStack>
                 <Button
-                  size="sm"
+                  size="xs"
                   colorScheme={passwordClipboard.hasCopied ? 'green' : 'blue'}
                   variant="outline"
                   leftIcon={
@@ -418,117 +414,105 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
                 readOnly
                 value={credentials.password}
                 fontFamily="mono"
-                fontSize="md"
-                letterSpacing="0.1em"
+                fontSize="sm"
+                letterSpacing="0.05em"
                 bg="gray.50"
                 borderColor="gray.200"
                 cursor="pointer"
                 onClick={passwordClipboard.onCopy}
                 title="Click to copy password"
+                size="sm"
               />
             </Box>
 
             {/* TOTP Code */}
             {credentials.totpCode && credentials.secretEntry && (
-              <>
-                <Divider />
-                <Box w="full">
-                  <HStack justify="space-between" mb={2}>
-                    <HStack>
-                      <TimeIcon color="green.500" boxSize={4} />
-                      <Text
-                        fontSize="sm"
-                        fontWeight="semibold"
-                        color="gray.700"
-                      >
-                        2FA Code ({credentials.secretEntry.name})
-                      </Text>
-                    </HStack>
-                    <HStack>
-                      <CircularProgress
-                        value={(totpTimeRemaining / 30) * 100}
-                        color={totpTimeRemaining <= 5 ? 'red.500' : 'green.500'}
-                        size="32px"
-                        thickness="8px"
-                      >
-                        <CircularProgressLabel fontSize="xs">
-                          {totpTimeRemaining}
-                        </CircularProgressLabel>
-                      </CircularProgress>
-                      <Button
-                        size="sm"
-                        colorScheme={
-                          totpClipboard.hasCopied ? 'green' : 'green'
-                        }
-                        variant="outline"
-                        leftIcon={
-                          totpClipboard.hasCopied ? <CheckIcon /> : <CopyIcon />
-                        }
-                        onClick={totpClipboard.onCopy}
-                      >
-                        {totpClipboard.hasCopied ? 'Copied!' : 'Copy'}
-                      </Button>
-                    </HStack>
+              <Box w="full">
+                <HStack justify="space-between" mb={1}>
+                  <HStack spacing={1}>
+                    <TimeIcon color="green.500" boxSize={3} />
+                    <Text fontSize="xs" fontWeight="semibold" color="gray.700">
+                      2FA ({credentials.secretEntry.name})
+                    </Text>
                   </HStack>
-                  <Input
-                    readOnly
-                    value={formatCode(credentials.totpCode)}
-                    fontFamily="mono"
-                    fontSize="xl"
-                    fontWeight="bold"
-                    letterSpacing="0.2em"
-                    textAlign="center"
-                    bg="gray.50"
-                    borderColor="gray.200"
-                    cursor="pointer"
-                    onClick={totpClipboard.onCopy}
-                    title="Click to copy 2FA code"
-                  />
-                </Box>
-              </>
+                  <HStack spacing={2}>
+                    <CircularProgress
+                      value={(totpTimeRemaining / 30) * 100}
+                      color={totpTimeRemaining <= 5 ? 'red.500' : 'green.500'}
+                      size="24px"
+                      thickness="8px"
+                    >
+                      <CircularProgressLabel fontSize="2xs">
+                        {totpTimeRemaining}
+                      </CircularProgressLabel>
+                    </CircularProgress>
+                    <Button
+                      size="xs"
+                      colorScheme={totpClipboard.hasCopied ? 'green' : 'green'}
+                      variant="outline"
+                      leftIcon={
+                        totpClipboard.hasCopied ? <CheckIcon /> : <CopyIcon />
+                      }
+                      onClick={totpClipboard.onCopy}
+                    >
+                      {totpClipboard.hasCopied ? 'Copied!' : 'Copy'}
+                    </Button>
+                  </HStack>
+                </HStack>
+                <Input
+                  readOnly
+                  value={formatCode(credentials.totpCode)}
+                  fontFamily="mono"
+                  fontSize="lg"
+                  fontWeight="bold"
+                  letterSpacing="0.15em"
+                  textAlign="center"
+                  bg="gray.50"
+                  borderColor="gray.200"
+                  cursor="pointer"
+                  onClick={totpClipboard.onCopy}
+                  title="Click to copy 2FA code"
+                  size="sm"
+                />
+              </Box>
             )}
 
             {/* No TOTP available */}
             {!credentials.totpCode && (
-              <>
-                <Divider />
-                <Alert status="info" borderRadius="md" fontSize="sm">
-                  <AlertIcon />
-                  No 2FA secret found for this domain in your vault.
-                </Alert>
-              </>
+              <Alert status="info" borderRadius="md" fontSize="xs" py={2}>
+                <AlertIcon boxSize={3} />
+                No 2FA secret found for this domain.
+              </Alert>
             )}
           </VStack>
         </Box>
       )}
 
-      <Divider />
-
       {/* Secrets Browser */}
       <Box
         w="full"
         bg="white"
-        borderRadius="lg"
+        borderRadius="md"
         borderWidth="1px"
-        p={4}
+        p={3}
         shadow="sm"
       >
         <Accordion allowToggle>
           <AccordionItem border="none">
-            <AccordionButton px={0} py={2}>
+            <AccordionButton px={0} py={1}>
               <Box flex="1" textAlign="left">
-                <Text fontSize="sm" fontWeight="semibold" color="gray.700">
-                  📚 Browse Your Secrets ({filteredCount})
+                <Text fontSize="xs" fontWeight="semibold" color="gray.700">
+                  📚 Browse Secrets ({filteredCount})
                 </Text>
               </Box>
               <AccordionIcon />
             </AccordionButton>
-            <AccordionPanel px={0} py={4}>
-              <VStack spacing={3}>
+            <AccordionPanel px={0} py={2}>
+              <VStack spacing={2}>
                 {/* Search filter */}
-                <InputGroup>
+                <InputGroup size="sm">
                   <InputLeftElement pointerEvents="none">
-                    <SearchIcon color="gray.400" />
+                    <SearchIcon color="gray.400" boxSize={3} />
                   </InputLeftElement>
                   <Input
                     placeholder="Search secrets..."
@@ -537,13 +521,14 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
                     bg="gray.50"
                     borderColor="gray.200"
                     _focus={{ borderColor: 'blue.400', bg: 'white' }}
+                    fontSize="sm"
                   />
                   {filterQuery && (
                     <InputRightElement>
                       <IconButton
                         aria-label="Clear search"
                         icon={<CloseIcon />}
-                        size="sm"
+                        size="xs"
                         variant="ghost"
                         onClick={() => setFilterQuery('')}
                       />
@@ -552,34 +537,36 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
                 </InputGroup>
 
                 {/* Secrets list */}
-                <VStack spacing={2} w="full" maxH="200px" overflowY="auto">
+                <VStack spacing={1} w="full" maxH="150px" overflowY="auto">
                   {filteredIndices.map((index) => {
                     const secret = secrets[index];
                     return (
                       <Button
                         key={index}
                         variant="outline"
-                        size="sm"
+                        size="xs"
                         w="full"
                         justifyContent="flex-start"
                         onClick={() => handleSecretClick(secret)}
                         leftIcon={
                           <Box
-                            w={3}
-                            h={3}
+                            w={2}
+                            h={2}
                             borderRadius="full"
                             bg={secret.color || 'gray.400'}
                           />
                         }
+                        height="auto"
+                        py={1}
                       >
-                        <Text fontSize="sm" isTruncated>
+                        <Text fontSize="xs" isTruncated>
                           {secret.name}
                         </Text>
                       </Button>
                     );
                   })}
                   {filteredCount === 0 && (
-                    <Text color="gray.500" fontSize="sm">
+                    <Text color="gray.500" fontSize="xs">
                       No secrets match your search
                     </Text>
                   )}
