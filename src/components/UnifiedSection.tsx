@@ -16,12 +16,6 @@ import {
   useClipboard,
   CircularProgress,
   CircularProgressLabel,
-  Badge,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  Switch,
   Alert,
   AlertIcon,
   Accordion,
@@ -72,10 +66,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
   // Main domain input
   const [domain, setDomain] = useState('');
   const [filterQuery, setFilterQuery] = useState('');
-
-  // Password settings
-  const [passwordLength, setPasswordLength] = useState(16);
-  const [includeSymbols, setIncludeSymbols] = useState(false);
 
   // Generated credentials
   const [credentials, setCredentials] = useState<WebsiteCredentials | null>(
@@ -134,6 +124,13 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
       try {
         const normalizedDomain = normalizeDomainFromUrl(targetDomain);
 
+        // Find matching TOTP secret first to get password settings
+        const secretEntry = findSecretForDomain(normalizedDomain);
+
+        // Use password settings from secret entry or defaults
+        const passwordLength = secretEntry?.passwordLength ?? 16;
+        const includeSymbols = secretEntry?.includeSymbols ?? false;
+
         // Generate password
         const password = await derivePassword({
           masterKey: masterPassword,
@@ -142,8 +139,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
           includeSymbols,
         });
 
-        // Find matching TOTP secret
-        const secretEntry = findSecretForDomain(normalizedDomain);
         let totpCode: string | undefined;
         let totpTimeRemaining: number | undefined;
 
@@ -182,13 +177,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
         setIsGenerating(false);
       }
     },
-    [
-      masterPassword,
-      passwordLength,
-      includeSymbols,
-      findSecretForDomain,
-      toast,
-    ],
+    [masterPassword, findSecretForDomain, toast],
   );
 
   // TOTP timer
@@ -300,65 +289,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
               variant="outline"
               size="sm"
             />
-          </HStack>
-        </FormControl>
-      </Box>
-
-      {/* Password Settings */}
-      <Box
-        w="full"
-        bg="white"
-        borderRadius="md"
-        borderWidth="1px"
-        p={3}
-        shadow="sm"
-      >
-        <VStack spacing={2}>
-          <HStack justify="space-between" w="full">
-            <FormLabel
-              fontSize="xs"
-              fontWeight="semibold"
-              color="gray.700"
-              mb={0}
-            >
-              🎛️ Length
-            </FormLabel>
-            <Badge
-              colorScheme="blue"
-              fontSize="xs"
-              px={2}
-              py={0.5}
-              borderRadius="full"
-            >
-              {passwordLength}
-            </Badge>
-          </HStack>
-          <Slider
-            value={passwordLength}
-            min={8}
-            max={32}
-            onChange={(v) => setPasswordLength(v)}
-            colorScheme="blue"
-            size="sm"
-          >
-            <SliderTrack bg="gray.200">
-              <SliderFilledTrack />
-            </SliderTrack>
-            <SliderThumb boxSize={2.5} />
-          </Slider>
-
-          <HStack justify="space-between" w="full" pt={1}>
-            <HStack spacing={2}>
-              <Switch
-                isChecked={includeSymbols}
-                onChange={(e) => setIncludeSymbols(e.target.checked)}
-                colorScheme="blue"
-                size="sm"
-              />
-              <FormLabel m={0} fontSize="xs" color="gray.700">
-                Symbols
-              </FormLabel>
-            </HStack>
             <Button
               colorScheme="blue"
               onClick={handleGenerate}
@@ -371,7 +301,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
               🔐 Generate
             </Button>
           </HStack>
-        </VStack>
+        </FormControl>
       </Box>
 
       {/* Generated Credentials */}

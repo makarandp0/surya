@@ -164,12 +164,6 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
       }
 
       onLogin(masterPassword, secrets, fileContent, rememberPassword);
-
-      toast({
-        status: 'success',
-        title: 'Login Successful',
-        description: `Loaded ${secrets.length} secret(s)`,
-      });
     } catch (error) {
       toast({
         status: 'error',

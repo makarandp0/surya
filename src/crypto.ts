@@ -213,6 +213,8 @@ export interface SecretEntry {
   name: string;
   secret: string;
   color?: string;
+  passwordLength?: number;
+  includeSymbols?: boolean;
 }
 
 export interface SecretsFile {
