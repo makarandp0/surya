@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { Box, IconButton } from '@chakra-ui/react';
+import {
+  Box,
+  IconButton,
+  Card,
+  CardHeader,
+  CardBody,
+  HStack,
+  Text,
+  Spacer,
+} from '@chakra-ui/react';
 import { FiRotateCw } from 'react-icons/fi';
-import { SecretEntry } from '../crypto';
-import { CredentialCard } from './CredentialCard';
-import { CredentialActions } from './CredentialActions';
+import { SecretEntry, normalizeDomainFromUrl } from '../crypto';
+import { CredentialCardContent } from './CredentialCardContent';
+import { CredentialActionsContent } from './CredentialActionsContent';
 
 interface FlipCredentialCardProps {
   secretEntry: SecretEntry;
@@ -24,77 +33,98 @@ export const FlipCredentialCard: React.FC<FlipCredentialCardProps> = ({
     setIsFlipped(!isFlipped);
   };
 
+  // Extract title for the header
+  const domain = secretEntry.website
+    ? normalizeDomainFromUrl(secretEntry.website)
+    : '';
+  const title =
+    secretEntry.name || domain || secretEntry.username || 'Credential';
+
   return (
-    <Box
-      w="full"
-      h="180px"
-      position="relative"
-      sx={{
-        perspective: '1000px',
-      }}
-    >
-      {/* Flip Container */}
-      <Box
-        w="full"
-        h="full"
-        position="relative"
-        sx={{
-          transformStyle: 'preserve-3d',
-          transition: 'transform 0.6s ease-in-out',
-          transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-        }}
-      >
-        {/* Front Side - CredentialCard */}
+    <Card w="full" h="180px" variant="elevated" borderRadius="lg">
+      {/* Card Header with Flip Button */}
+      <CardHeader p={3} pb={0}>
+        <HStack align="center">
+          <Text
+            fontSize="sm"
+            fontWeight="medium"
+            color="gray.600"
+            noOfLines={1}
+          >
+            {title}
+          </Text>
+          <Spacer />
+          <Text fontSize="xs" color="gray.400" mr={2}>
+            {isFlipped ? 'Actions' : 'Info'}
+          </Text>
+          <IconButton
+            aria-label={isFlipped ? 'Show info' : 'Show actions'}
+            icon={<FiRotateCw />}
+            size="xs"
+            onClick={handleFlip}
+            colorScheme="blue"
+            variant="ghost"
+            borderRadius="full"
+          />
+        </HStack>
+      </CardHeader>
+
+      {/* Flippable Card Body */}
+      <CardBody p={4} h="calc(100% - 60px)" position="relative">
         <Box
-          position="absolute"
           w="full"
-          h="180px"
+          h="full"
+          position="relative"
           sx={{
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(0deg)',
+            perspective: '1000px',
           }}
         >
-          <CredentialCard
-            secretEntry={secretEntry}
-            originalIndex={originalIndex}
-            onEdit={onEdit}
-          />
-        </Box>
+          <Box
+            w="full"
+            h="full"
+            position="relative"
+            sx={{
+              transformStyle: 'preserve-3d',
+              transition: 'transform 0.6s ease-in-out',
+              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            }}
+          >
+            {/* Front Side - CredentialCard Content */}
+            <Box
+              position="absolute"
+              w="full"
+              h="full"
+              sx={{
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(0deg)',
+              }}
+            >
+              <CredentialCardContent
+                secretEntry={secretEntry}
+                originalIndex={originalIndex}
+                onEdit={onEdit}
+              />
+            </Box>
 
-        {/* Back Side - CredentialActions */}
-        <Box
-          position="absolute"
-          w="full"
-          h="180px"
-          sx={{
-            backfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-          }}
-        >
-          <CredentialActions
-            secretEntry={secretEntry}
-            originalIndex={originalIndex}
-            masterPassword={masterPassword}
-          />
+            {/* Back Side - CredentialActions Content */}
+            <Box
+              position="absolute"
+              w="full"
+              h="full"
+              sx={{
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)',
+              }}
+            >
+              <CredentialActionsContent
+                secretEntry={secretEntry}
+                originalIndex={originalIndex}
+                masterPassword={masterPassword}
+              />
+            </Box>
+          </Box>
         </Box>
-      </Box>
-
-      {/* Floating Flip Button */}
-      <IconButton
-        aria-label={isFlipped ? 'Flip to front' : 'Flip to back'}
-        icon={<FiRotateCw />}
-        size="sm"
-        position="absolute"
-        top={2}
-        right={2}
-        zIndex={10}
-        colorScheme="blue"
-        variant="solid"
-        borderRadius="full"
-        onClick={handleFlip}
-        transform={isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'}
-        transition="transform 0.6s ease-in-out"
-      />
-    </Box>
+      </CardBody>
+    </Card>
   );
 };
