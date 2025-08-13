@@ -78,6 +78,15 @@ const theme = extendTheme({
         },
       },
     },
+    FormLabel: {
+      baseStyle: {
+        fontSize: 'xs',
+        fontWeight: 'medium',
+        // color: 'primary', // Ensure 'primary' is defined in your color palette
+        mb: 1,
+        letterSpacing: '0.01em',
+      },
+    },
   },
   colors: {
     brand: {
