@@ -65,8 +65,8 @@ const waitForInitialization = async (container: Element) => {
   while (attempts < 10) {
     // max 1 second
     if (
-      container.textContent?.includes('ChromePass Login') &&
-      !container.textContent?.includes('Loading ChromePass...')
+      container.textContent?.includes('Surya Login') &&
+      !container.textContent?.includes('Loading Surya...')
     ) {
       return;
     }
@@ -85,7 +85,7 @@ describe('App UI', () => {
       await waitForInitialization(container);
     });
 
-    expect(container.textContent).toContain('ChromePass');
+    expect(container.textContent).toContain('Surya');
     expect(container.textContent).toContain('Remember password');
     expect(container.textContent).toContain('Unlock Vault');
 

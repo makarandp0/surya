@@ -12,7 +12,7 @@ interface StoredSession {
   expiresAt?: number; // Explicit expiry timestamp
 }
 
-const STORAGE_KEY = 'chromepass_session';
+const STORAGE_KEY = 'surya_session';
 const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 const STORAGE_VERSION = 2; // Increment when storage format changes
 
@@ -182,7 +182,7 @@ class StorageService {
     const encoder = new TextEncoder();
 
     // Create a device-specific key using navigator.userAgent + timestamp salt
-    const deviceInfo = navigator.userAgent + 'chromepass_device_key';
+    const deviceInfo = navigator.userAgent + 'surya_device_key';
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
       encoder.encode(deviceInfo),
@@ -192,7 +192,7 @@ class StorageService {
     );
 
     // Derive encryption key
-    const salt = encoder.encode('chromepass_password_salt');
+    const salt = encoder.encode('surya_password_salt');
     const key = await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
@@ -263,7 +263,7 @@ class StorageService {
       }
 
       // Create the same device-specific key
-      const deviceInfo = navigator.userAgent + 'chromepass_device_key';
+      const deviceInfo = navigator.userAgent + 'surya_device_key';
       const keyMaterial = await crypto.subtle.importKey(
         'raw',
         encoder.encode(deviceInfo),
@@ -273,7 +273,7 @@ class StorageService {
       );
 
       // Derive decryption key
-      const salt = encoder.encode('chromepass_password_salt');
+      const salt = encoder.encode('surya_password_salt');
       const key = await crypto.subtle.deriveKey(
         {
           name: 'PBKDF2',
@@ -321,7 +321,7 @@ class StorageService {
       // Clear all localStorage items that start with our prefix
       const keys = Object.keys(localStorage);
       keys.forEach((key) => {
-        if (key.startsWith('chromepass_')) {
+        if (key.startsWith('surya_')) {
           localStorage.removeItem(key);
         }
       });

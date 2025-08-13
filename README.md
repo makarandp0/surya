@@ -1,8 +1,8 @@
-# ChromePass — Unified Password & TOTP Manager
+# Surya — Unified Password & TOTP Manager
 
 ## Overview
 
-ChromePass is a unified password manager and TOTP authenticator that provides:
+Surya is a unified password manager and TOTP authenticator that provides:
 
 - **Unified Login Experience**: Single master password + encrypted secrets file
 - **Deterministic Password Generation**: Site-specific passwords derived from master key and domain
@@ -72,7 +72,7 @@ ChromePass is a unified password manager and TOTP authenticator that provides:
 
 ### Domain Matching
 
-ChromePass intelligently matches domains to your stored secrets:
+Surya intelligently matches domains to your stored secrets:
 
 - Explicit `website` field takes priority (e.g., `"website": "google.com"`)
 - Fallback to name-based matching: `google.com` matches `Google:user@gmail.com`

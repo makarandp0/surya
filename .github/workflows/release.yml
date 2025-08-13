@@ -42,7 +42,7 @@ jobs:
       - name: Create extension package
         run: |
           cd dist
-          zip -r ../chromepass-extension-${{ github.ref_name }}.zip .
+          zip -r ../surya-extension-${{ github.ref_name }}.zip .
           cd ..
 
       - name: Determine previous tag
@@ -65,7 +65,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ChromePass ${{ github.ref_name }}
+          name: Surya ${{ github.ref_name }}
           body: ${{ steps.notes.outputs.body }}
           files: |
-            ./chromepass-extension-${{ github.ref_name }}.zip
+            ./surya-extension-${{ github.ref_name }}.zip

@@ -1,14 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "ChromePass",
+  "name": "Surya",
   "description": "Deterministic password generator: master key + site, no storage.",
   "version": "0.2.7",
   "action": {
-    "default_title": "ChromePass",
+    "default_title": "Surya",
     "default_popup": "index.html"
   },
-  "permissions": [
-    "tabs",
-    "activeTab"
-  ]
+  "permissions": ["tabs", "activeTab"]
 }

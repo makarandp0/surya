@@ -74,7 +74,7 @@ function main() {
       '⚠️  IMPORTANT: Keep your password safe! Without it, your secrets cannot be recovered.',
     );
     console.log(
-      '💡 You can now use this encrypted file with your ChromePass extension.',
+      '💡 You can now use this encrypted file with your Surya extension.',
     );
   } catch (error) {
     console.error('❌ Error:', error.message);

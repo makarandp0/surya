@@ -1,4 +1,4 @@
-# Contributing to ChromePass
+# Contributing to Surya
 
 ## Code Style Guidelines
 

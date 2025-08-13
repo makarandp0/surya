@@ -154,7 +154,7 @@ export const App = () => {
           <VStack spacing={4} justify="center" minH="200px">
             <Spinner size="lg" color="blue.500" />
             <Text fontSize="sm" color="gray.600">
-              Loading ChromePass...
+              Loading Surya...
             </Text>
           </VStack>
         </Box>

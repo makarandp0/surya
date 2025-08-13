@@ -1,6 +1,6 @@
-# ChromePass - Unified Login Experience
+# Surya - Unified Login Experience
 
-ChromePass has been redesigned to provide a unified login experience that combines password generation and TOTP codes in a single interface.
+Surya has been redesigned to provide a unified login experience that combines password generation and TOTP codes in a single interface.
 
 ## What's New
 
@@ -83,7 +83,7 @@ The secrets file maintains compatibility with existing TOTP backup formats:
 
 ## Domain Matching
 
-ChromePass automatically matches domains to your stored secrets using intelligent fuzzy matching:
+Surya automatically matches domains to your stored secrets using intelligent fuzzy matching:
 
 - **Exact Match**: `google.com` matches `Google:user@gmail.com`
 - **Subdomain Match**: `mail.google.com` matches `Google:user@gmail.com`

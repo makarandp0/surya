@@ -47,7 +47,7 @@ export const AppHeader: React.FC<{
       }}
     >
       <Box style={{ display: 'flex', alignItems: 'center' }}>
-        <Icon as={LockIcon} color="brand.500" boxSize={5} mr={2} /> ChromePass
+        <Icon as={LockIcon} color="brand.500" boxSize={5} mr={2} /> Surya
       </Box>
       {(onLogout || onAddNew) && (
         <HStack spacing={1}>
