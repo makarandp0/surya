@@ -4,7 +4,7 @@ import { UnifiedSectionProps } from '../types/credential';
 import { useVaultSearch } from '../hooks/useVaultSearch';
 import { useTotpTimer } from '../hooks/useTotpTimer';
 import { useCredentialGenerator } from '../hooks/useCredentialGenerator';
-import { CredentialCard } from './CredentialCard';
+import { FlipCredentialCard } from './FlipCredentialCard';
 import { VaultSearch } from './VaultSearch';
 import { TotpTimer } from './TotpTimer';
 
@@ -131,10 +131,11 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
           {hasAnyTotp && <TotpTimer timeRemaining={totpTimeRemaining} />}
 
           {filteredSecrets.map((secret, index) => (
-            <CredentialCard
+            <FlipCredentialCard
               key={`${secret.name}-${index}`}
               secretEntry={secret}
               originalIndex={matchedIndices[index]}
+              masterPassword={masterPassword}
               onEdit={onEditSecret}
               onCopyUsername={handleCopyUsername}
               onCopyPassword={handleCopyPassword}
