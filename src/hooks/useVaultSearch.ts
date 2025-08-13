@@ -23,15 +23,20 @@ export const useVaultSearch = (
   const debouncedQuery = useDebounce(query, 500);
 
   // Search across multiple fields
-  const { filteredSecrets, filteredCount } = useMultiFieldSearch(
-    secrets,
-    debouncedQuery,
-    0, // Allow searching from first character
-  );
+  const { filteredSecrets, matchedIndices, filteredCount } =
+    useMultiFieldSearch(
+      secrets,
+      debouncedQuery,
+      0, // Allow searching from first character
+    );
 
   // Generate credentials for matched secrets
   const generateCredentialsForSecrets = useCallback(
-    async (matchedSecrets: SecretEntry[], showLoading = true) => {
+    async (
+      matchedSecrets: SecretEntry[],
+      indices: number[],
+      showLoading = true,
+    ) => {
       if (!masterPassword) {
         setCredentialCards([]);
         return;
@@ -44,7 +49,10 @@ export const useVaultSearch = (
       try {
         const cards: CredentialCard[] = [];
 
-        for (const secretEntry of matchedSecrets) {
+        for (let i = 0; i < matchedSecrets.length; i++) {
+          const secretEntry = matchedSecrets[i];
+          const originalIndex = indices[i];
+
           // Determine the domain to use for password generation
           let targetDomain = '';
           if (secretEntry.website) {
@@ -100,6 +108,7 @@ export const useVaultSearch = (
             password,
             totpCode,
             totpTimeRemaining,
+            originalIndex,
           });
         }
 
@@ -156,12 +165,17 @@ export const useVaultSearch = (
   // Generate credentials when search results change
   useEffect(() => {
     if (debouncedQuery.trim()) {
-      generateCredentialsForSecrets(filteredSecrets, true);
+      generateCredentialsForSecrets(filteredSecrets, matchedIndices, true);
     } else {
       // Clear results when query is empty
       setCredentialCards([]);
     }
-  }, [debouncedQuery, filteredSecrets, generateCredentialsForSecrets]);
+  }, [
+    debouncedQuery,
+    filteredSecrets,
+    matchedIndices,
+    generateCredentialsForSecrets,
+  ]);
 
   return {
     query,

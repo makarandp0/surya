@@ -10,6 +10,7 @@ import { TotpTimer } from './TotpTimer';
 export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
   masterPassword,
   secrets,
+  onEditSecret,
 }) => {
   const {
     query,
@@ -49,6 +50,8 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
             <CredentialCardComponent
               key={`${card.secretEntry.name}-${index}`}
               card={card}
+              originalIndex={card.originalIndex}
+              onEdit={onEditSecret}
             />
           ))}
         </VStack>

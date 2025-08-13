@@ -13,13 +13,18 @@ import { CredentialCard } from '../types/credential';
 
 interface CredentialCardProps {
   card: CredentialCard;
+  originalIndex: number;
+  onEdit: (index: number) => void;
 }
 
 export const CredentialCardComponent: React.FC<CredentialCardProps> = ({
   card,
+  originalIndex,
+  onEdit,
 }) => {
   const passwordClipboard = useClipboard(card.password);
   const totpClipboard = useClipboard(card.totpCode || '');
+  const usernameClipboard = useClipboard(card.username);
 
   const title =
     card.secretEntry.name || card.domain || card.username || 'Credential';
@@ -29,8 +34,18 @@ export const CredentialCardComponent: React.FC<CredentialCardProps> = ({
     }
     return card.username || card.domain || '';
   })();
+
+  const handleCardClick = () => {
+    onEdit(originalIndex);
+  };
   return (
-    <Card w="full" variant="elevated" borderRadius="lg">
+    <Card
+      w="full"
+      variant="elevated"
+      borderRadius="lg"
+      cursor="pointer"
+      onClick={handleCardClick}
+    >
       <CardBody px={3} py={2}>
         <HStack spacing={3} align="center">
           {/* Main info */}
@@ -57,13 +72,20 @@ export const CredentialCardComponent: React.FC<CredentialCardProps> = ({
               icon={<FiUser />}
               size="sm"
               variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                usernameClipboard.onCopy();
+              }}
             />
             <IconButton
               aria-label="Copy password"
               icon={<FiKey />}
               size="sm"
               variant="ghost"
-              onClick={passwordClipboard.onCopy}
+              onClick={(e) => {
+                e.stopPropagation();
+                passwordClipboard.onCopy();
+              }}
             />
             {card.totpCode && (
               <IconButton
@@ -71,7 +93,10 @@ export const CredentialCardComponent: React.FC<CredentialCardProps> = ({
                 icon={<FiClock />}
                 size="sm"
                 variant="ghost"
-                onClick={totpClipboard.onCopy}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  totpClipboard.onCopy();
+                }}
               />
             )}
             <IconButton
@@ -79,6 +104,10 @@ export const CredentialCardComponent: React.FC<CredentialCardProps> = ({
               icon={<FiMoreVertical />}
               size="sm"
               variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                // This will now navigate to edit page via card click
+              }}
             />
           </HStack>
         </HStack>

@@ -4,6 +4,7 @@ import { Box, Text, VStack, Spinner, Alert, AlertIcon } from '@chakra-ui/react';
 import pkg from '../package.json';
 import { LoginSection } from './components/LoginSection';
 import { UnifiedSection } from './components/UnifiedSection';
+import { EditCredential } from './components/EditCredential';
 import { AppLayout, AppHeader, AppFooter } from './components/AppLayout';
 import { SecretEntry, decryptSecretsFile } from './crypto';
 import { storageService } from './services/storage';
@@ -17,6 +18,10 @@ export const App = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
   const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
+
+  // Navigation state
+  const [currentView, setCurrentView] = useState<'main' | 'edit'>('main');
+  const [editingSecretIndex, setEditingSecretIndex] = useState<number>(-1);
 
   // Initialize app and check for existing session
   useEffect(() => {
@@ -113,6 +118,35 @@ export const App = () => {
     console.log('Add new credential clicked');
   };
 
+  const handleEditSecret = (index: number) => {
+    setEditingSecretIndex(index);
+    setCurrentView('edit');
+  };
+
+  const handleBackToMain = () => {
+    setCurrentView('main');
+    setEditingSecretIndex(-1);
+  };
+
+  const handleSaveCredential = (index: number, updatedSecret: SecretEntry) => {
+    // Update the secrets array with the modified secret
+    const newSecrets = [...secrets];
+    newSecrets[index] = updatedSecret;
+    setSecrets(newSecrets);
+
+    // Go back to main view
+    handleBackToMain();
+  };
+
+  const handleDeleteCredential = (index: number) => {
+    // Remove from secrets array
+    const newSecrets = secrets.filter((_, i) => i !== index);
+    setSecrets(newSecrets);
+
+    // Go back to main view
+    handleBackToMain();
+  };
+
   const handleSessionRestore = async (
     password: string,
   ): Promise<SecretEntry[] | null> => {
@@ -163,6 +197,39 @@ export const App = () => {
     );
   }
 
+  const renderCurrentView = () => {
+    if (currentView === 'edit' && isLoggedIn) {
+      return (
+        <EditCredential
+          secrets={secrets}
+          secretIndex={editingSecretIndex}
+          onSave={handleSaveCredential}
+          onDelete={handleDeleteCredential}
+          onCancel={handleBackToMain}
+        />
+      );
+    }
+
+    if (!isLoggedIn) {
+      return (
+        <LoginSection
+          onLogin={handleLogin}
+          onSessionRestore={handleSessionRestore}
+          autoLoginFailed={autoLoginAttempted}
+        />
+      );
+    }
+
+    return (
+      <UnifiedSection
+        masterPassword={masterPassword}
+        secrets={secrets}
+        onLogout={handleLogout}
+        onEditSecret={handleEditSecret}
+      />
+    );
+  };
+
   return (
     <AppLayout>
       <AppHeader
@@ -196,20 +263,7 @@ export const App = () => {
             </Alert>
           )}
 
-          {/* Main Content */}
-          {!isLoggedIn ? (
-            <LoginSection
-              onLogin={handleLogin}
-              onSessionRestore={handleSessionRestore}
-              autoLoginFailed={autoLoginAttempted}
-            />
-          ) : (
-            <UnifiedSection
-              masterPassword={masterPassword}
-              secrets={secrets}
-              onLogout={handleLogout}
-            />
-          )}
+          {renderCurrentView()}
         </Box>
       </Box>
       <AppFooter version={pkg.version} />

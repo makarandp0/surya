@@ -7,10 +7,12 @@ export interface CredentialCard {
   password: string;
   totpCode?: string;
   totpTimeRemaining?: number;
+  originalIndex: number;
 }
 
 export interface UnifiedSectionProps {
   masterPassword: string;
   secrets: SecretEntry[];
   onLogout: () => void;
+  onEditSecret: (index: number) => void;
 }
