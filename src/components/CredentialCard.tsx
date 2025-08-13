@@ -3,41 +3,63 @@ import {
   Box,
   HStack,
   Text,
-  useClipboard,
   IconButton,
   Card,
   CardBody,
 } from '@chakra-ui/react';
 import { FiUser, FiKey, FiClock, FiMoreVertical } from 'react-icons/fi';
-import { CredentialCard } from '../types/credential';
+import { SecretEntry, normalizeDomainFromUrl } from '../crypto';
 
-interface CredentialCardProps {
-  card: CredentialCard;
+interface CredentialEntryProps {
+  secretEntry: SecretEntry;
   originalIndex: number;
   onEdit: (index: number) => void;
+  onCopyUsername?: (index: number) => void;
+  onCopyPassword?: (index: number) => void;
+  onCopyTotp?: (index: number) => void;
 }
 
-export const CredentialCardComponent: React.FC<CredentialCardProps> = ({
-  card,
+export const CredentialCard: React.FC<CredentialEntryProps> = ({
+  secretEntry,
   originalIndex,
   onEdit,
+  onCopyUsername,
+  onCopyPassword,
+  onCopyTotp,
 }) => {
-  const passwordClipboard = useClipboard(card.password);
-  const totpClipboard = useClipboard(card.totpCode || '');
-  const usernameClipboard = useClipboard(card.username);
+  // Extract basic display information from SecretEntry
+  const domain = secretEntry.website
+    ? normalizeDomainFromUrl(secretEntry.website)
+    : '';
 
   const title =
-    card.secretEntry.name || card.domain || card.username || 'Credential';
+    secretEntry.name || domain || secretEntry.username || 'Credential';
   const subtitle = (() => {
-    if (card.username && card.domain) {
-      return `${card.username}@${card.domain}`;
+    if (secretEntry.username && domain) {
+      return `${secretEntry.username}@${domain}`;
     }
-    return card.username || card.domain || '';
+    return secretEntry.username || domain || '';
   })();
 
   const handleCardClick = () => {
     onEdit(originalIndex);
   };
+
+  const handleCopyUsername = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCopyUsername?.(originalIndex);
+  };
+
+  const handleCopyPassword = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCopyPassword?.(originalIndex);
+  };
+
+  const handleCopyTotp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCopyTotp?.(originalIndex);
+  };
+
   return (
     <Card
       w="full"
@@ -67,36 +89,29 @@ export const CredentialCardComponent: React.FC<CredentialCardProps> = ({
 
           {/* Action icons */}
           <HStack spacing={1}>
-            <IconButton
-              aria-label="Copy username"
-              icon={<FiUser />}
-              size="sm"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                usernameClipboard.onCopy();
-              }}
-            />
+            {secretEntry.username && (
+              <IconButton
+                aria-label="Copy username"
+                icon={<FiUser />}
+                size="sm"
+                variant="ghost"
+                onClick={handleCopyUsername}
+              />
+            )}
             <IconButton
               aria-label="Copy password"
               icon={<FiKey />}
               size="sm"
               variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                passwordClipboard.onCopy();
-              }}
+              onClick={handleCopyPassword}
             />
-            {card.totpCode && (
+            {secretEntry.secret && (
               <IconButton
                 aria-label="Copy TOTP"
                 icon={<FiClock />}
                 size="sm"
                 variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  totpClipboard.onCopy();
-                }}
+                onClick={handleCopyTotp}
               />
             )}
             <IconButton

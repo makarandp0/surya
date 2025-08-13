@@ -4,7 +4,7 @@ import { UnifiedSectionProps } from '../types/credential';
 import { useVaultSearch } from '../hooks/useVaultSearch';
 import { useTotpTimer } from '../hooks/useTotpTimer';
 import { useCredentialGenerator } from '../hooks/useCredentialGenerator';
-import { CredentialEntryComponent } from './CredentialEntry';
+import { CredentialCard } from './CredentialCard';
 import { VaultSearch } from './VaultSearch';
 import { TotpTimer } from './TotpTimer';
 
@@ -74,12 +74,11 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
           isClosable: true,
         });
       } catch (_error) {
-        console.log('failed to copy password:', _error);
         const msg = _error instanceof Error ? _error.message : 'Unknown error';
         toast({
           status: 'error',
           title: 'Failed to copy password:' + msg,
-          duration: 3000,
+          duration: null,
           isClosable: true,
           position: 'top',
         });
@@ -132,7 +131,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
           {hasAnyTotp && <TotpTimer timeRemaining={totpTimeRemaining} />}
 
           {filteredSecrets.map((secret, index) => (
-            <CredentialEntryComponent
+            <CredentialCard
               key={`${secret.name}-${index}`}
               secretEntry={secret}
               originalIndex={matchedIndices[index]}
