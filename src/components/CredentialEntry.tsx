@@ -1,109 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   HStack,
   Text,
-  useClipboard,
   IconButton,
   Card,
   CardBody,
-  Skeleton,
 } from '@chakra-ui/react';
 import { FiUser, FiKey, FiClock, FiMoreVertical } from 'react-icons/fi';
-import { SecretEntry } from '../crypto';
-import { CredentialCard } from '../types/credential';
-import { useCredentialGenerator } from '../hooks/useCredentialGenerator';
+import { SecretEntry, normalizeDomainFromUrl } from '../crypto';
 
 interface CredentialEntryProps {
   secretEntry: SecretEntry;
   originalIndex: number;
-  masterPassword: string;
   onEdit: (index: number) => void;
+  onCopyUsername?: (index: number) => void;
+  onCopyPassword?: (index: number) => void;
+  onCopyTotp?: (index: number) => void;
 }
 
 export const CredentialEntryComponent: React.FC<CredentialEntryProps> = ({
   secretEntry,
   originalIndex,
-  masterPassword,
   onEdit,
+  onCopyUsername,
+  onCopyPassword,
+  onCopyTotp,
 }) => {
-  const [card, setCard] = useState<CredentialCard | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { generateCredentialCard } = useCredentialGenerator(masterPassword);
-
-  // Generate credential card on mount
-  useEffect(() => {
-    const generateCard = async () => {
-      if (!masterPassword) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        const generatedCard = await generateCredentialCard(
-          secretEntry,
-          originalIndex,
-        );
-        setCard(generatedCard);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.warn('Failed to generate credential card:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    generateCard();
-  }, [secretEntry, originalIndex, masterPassword, generateCredentialCard]);
-
-  const passwordClipboard = useClipboard(card?.password || '');
-  const totpClipboard = useClipboard(card?.totpCode || '');
-  const usernameClipboard = useClipboard(card?.username || '');
+  // Extract basic display information from SecretEntry
+  const domain = secretEntry.website
+    ? normalizeDomainFromUrl(secretEntry.website)
+    : '';
 
   const title =
-    secretEntry.name || card?.domain || card?.username || 'Credential';
+    secretEntry.name || domain || secretEntry.username || 'Credential';
   const subtitle = (() => {
-    if (card?.username && card?.domain) {
-      return `${card.username}@${card.domain}`;
+    if (secretEntry.username && domain) {
+      return `${secretEntry.username}@${domain}`;
     }
-    return card?.username || card?.domain || '';
+    return secretEntry.username || domain || '';
   })();
 
   const handleCardClick = () => {
     onEdit(originalIndex);
   };
 
-  if (isLoading) {
-    return (
-      <Card w="full" variant="elevated" borderRadius="lg">
-        <CardBody px={3} py={2}>
-          <HStack spacing={3} align="center">
-            <Box flex={1} minW={0}>
-              <Skeleton height="20px" width="60%" />
-              <Skeleton height="16px" width="40%" mt={1} />
-            </Box>
-            <HStack spacing={1}>
-              <Skeleton height="32px" width="32px" borderRadius="md" />
-              <Skeleton height="32px" width="32px" borderRadius="md" />
-              <Skeleton height="32px" width="32px" borderRadius="md" />
-              <Skeleton height="32px" width="32px" borderRadius="md" />
-            </HStack>
-          </HStack>
-        </CardBody>
-      </Card>
-    );
-  }
+  const handleCopyUsername = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCopyUsername?.(originalIndex);
+  };
 
-  if (!card) {
-    return (
-      <Card w="full" variant="elevated" borderRadius="lg">
-        <CardBody px={3} py={2}>
-          <Text color="red.500">Failed to generate credential</Text>
-        </CardBody>
-      </Card>
-    );
-  }
+  const handleCopyPassword = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCopyPassword?.(originalIndex);
+  };
+
+  const handleCopyTotp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onCopyTotp?.(originalIndex);
+  };
 
   return (
     <Card
@@ -134,36 +89,29 @@ export const CredentialEntryComponent: React.FC<CredentialEntryProps> = ({
 
           {/* Action icons */}
           <HStack spacing={1}>
-            <IconButton
-              aria-label="Copy username"
-              icon={<FiUser />}
-              size="sm"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                usernameClipboard.onCopy();
-              }}
-            />
+            {secretEntry.username && (
+              <IconButton
+                aria-label="Copy username"
+                icon={<FiUser />}
+                size="sm"
+                variant="ghost"
+                onClick={handleCopyUsername}
+              />
+            )}
             <IconButton
               aria-label="Copy password"
               icon={<FiKey />}
               size="sm"
               variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                passwordClipboard.onCopy();
-              }}
+              onClick={handleCopyPassword}
             />
-            {card.totpCode && (
+            {secretEntry.secret && (
               <IconButton
                 aria-label="Copy TOTP"
                 icon={<FiClock />}
                 size="sm"
                 variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  totpClipboard.onCopy();
-                }}
+                onClick={handleCopyTotp}
               />
             )}
             <IconButton
