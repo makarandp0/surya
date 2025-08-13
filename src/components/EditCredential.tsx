@@ -22,7 +22,7 @@ import {
   ModalCloseButton,
   useDisclosure,
 } from '@chakra-ui/react';
-import { FiArrowLeft, FiSave, FiTrash2 } from 'react-icons/fi';
+import { FiSave, FiTrash2 } from 'react-icons/fi';
 import { SecretEntry } from '../crypto';
 
 interface EditCredentialProps {
@@ -31,6 +31,7 @@ interface EditCredentialProps {
   onSave: (index: number, updatedSecret: SecretEntry) => void;
   onDelete: (index: number) => void;
   onCancel: () => void;
+  isNewEntry?: boolean;
 }
 
 export const EditCredential: React.FC<EditCredentialProps> = ({
@@ -39,11 +40,12 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
   onSave,
   onDelete,
   onCancel,
+  isNewEntry = false,
 }) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const secret = secrets[secretIndex];
+  const secret = isNewEntry ? null : secrets[secretIndex];
 
   const [formData, setFormData] = useState({
     name: secret?.name || '',
@@ -54,7 +56,7 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
     includeSymbols: secret?.includeSymbols || false,
   });
 
-  if (secretIndex === -1 || !secret) {
+  if (!isNewEntry && (secretIndex === -1 || !secret)) {
     return (
       <Box p={4}>
         <Text color="red.500">Secret not found</Text>
@@ -74,7 +76,7 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
 
   const handleSave = () => {
     const updatedSecret: SecretEntry = {
-      ...secret,
+      ...(secret || {}),
       name: formData.name,
       website: formData.website,
       username: formData.username,
@@ -85,8 +87,10 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
 
     onSave(secretIndex, updatedSecret);
     toast({
-      title: 'Secret Updated',
-      description: 'Your changes have been saved successfully.',
+      title: isNewEntry ? 'Entry Created' : 'Secret Updated',
+      description: isNewEntry
+        ? 'Your new entry has been created successfully.'
+        : 'Your changes have been saved successfully.',
       status: 'success',
       duration: 3000,
       isClosable: true,
@@ -116,27 +120,18 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
   return (
     <>
       <VStack spacing={4} w="full" p={4}>
-        {/* Header */}
-        <HStack w="full" justify="space-between" align="center">
-          <HStack>
+        {/* Delete button for existing entries */}
+        {!isNewEntry && (
+          <HStack w="full" justify="flex-end">
             <IconButton
-              aria-label="Go back"
-              icon={<FiArrowLeft />}
+              aria-label="Delete secret"
+              icon={<FiTrash2 />}
+              colorScheme="red"
               variant="ghost"
-              onClick={handleCancel}
+              onClick={handleDelete}
             />
-            <Text fontSize="lg" fontWeight="semibold">
-              Edit Secret
-            </Text>
           </HStack>
-          <IconButton
-            aria-label="Delete secret"
-            icon={<FiTrash2 />}
-            colorScheme="red"
-            variant="ghost"
-            onClick={handleDelete}
-          />
-        </HStack>
+        )}
 
         {/* Edit Form */}
         <Card w="full" maxW="md">
@@ -216,7 +211,7 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
             leftIcon={<FiSave />}
             onClick={handleSave}
           >
-            Save Changes
+            {isNewEntry ? 'Create Entry' : 'Save Changes'}
           </Button>
         </HStack>
       </VStack>

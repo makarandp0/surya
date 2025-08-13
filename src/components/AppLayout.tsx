@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Icon, Button, HStack } from '@chakra-ui/react';
-import { LockIcon, AddIcon } from '@chakra-ui/icons';
+import { LockIcon, AddIcon, ChevronLeftIcon } from '@chakra-ui/icons';
 import { COLORS } from '../constants/colors';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({
@@ -26,9 +26,32 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({
 };
 
 export const AppHeader: React.FC<{
+  currentView?: 'main' | 'edit' | 'new';
+  isLoggedIn?: boolean;
   onLogout?: () => void;
   onAddNew?: () => void;
-}> = ({ onLogout, onAddNew }) => {
+  onBack?: () => void;
+}> = ({
+  currentView = 'main',
+  isLoggedIn = false,
+  onLogout,
+  onAddNew,
+  onBack,
+}) => {
+  const getHeaderTitle = () => {
+    if (currentView === 'edit') {
+      return 'Edit Entry';
+    }
+    if (currentView === 'new') {
+      return 'New Entry';
+    }
+    return 'Surya';
+  };
+
+  const showBackButton = currentView !== 'main' && onBack;
+  const showAddButton = currentView === 'main' && onAddNew;
+  const showLogoutButton = isLoggedIn && currentView === 'main' && onLogout;
+
   return (
     <Box
       style={{
@@ -37,7 +60,10 @@ export const AppHeader: React.FC<{
         borderBottom: `1px solid ${COLORS.border}`,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: onLogout || onAddNew ? 'space-between' : 'center',
+        justifyContent:
+          showBackButton || showAddButton || showLogoutButton
+            ? 'space-between'
+            : 'center',
         fontWeight: 600,
         fontSize: 18,
         letterSpacing: 1,
@@ -47,11 +73,30 @@ export const AppHeader: React.FC<{
       }}
     >
       <Box style={{ display: 'flex', alignItems: 'center' }}>
-        <Icon as={LockIcon} color="brand.500" boxSize={5} mr={2} /> Surya
+        {showBackButton && (
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={onBack}
+            style={{
+              fontSize: 12,
+              color: COLORS.secondary,
+              padding: '4px 8px',
+              marginRight: '8px',
+            }}
+          >
+            <ChevronLeftIcon boxSize={4} mr={1} /> Back
+          </Button>
+        )}
+        {currentView === 'main' && (
+          <Icon as={LockIcon} color="brand.500" boxSize={5} mr={2} />
+        )}
+        {getHeaderTitle()}
       </Box>
-      {(onLogout || onAddNew) && (
+
+      {(showAddButton || showLogoutButton) && (
         <HStack spacing={1}>
-          {onAddNew && (
+          {showAddButton && (
             <Button
               size="xs"
               variant="ghost"
@@ -65,7 +110,7 @@ export const AppHeader: React.FC<{
               <Icon as={AddIcon} boxSize={3} mr={1} /> New
             </Button>
           )}
-          {onLogout && (
+          {showLogoutButton && (
             <Button
               size="xs"
               variant="ghost"

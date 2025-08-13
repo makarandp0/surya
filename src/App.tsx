@@ -20,7 +20,9 @@ export const App = () => {
   const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
 
   // Navigation state
-  const [currentView, setCurrentView] = useState<'main' | 'edit'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'edit' | 'new'>(
+    'main',
+  );
   const [editingSecretIndex, setEditingSecretIndex] = useState<number>(-1);
 
   // Initialize app and check for existing session
@@ -114,8 +116,8 @@ export const App = () => {
   };
 
   const handleAddNew = () => {
-    // TODO: Implement add new credential functionality
-    console.log('Add new credential clicked');
+    setEditingSecretIndex(-1); // -1 indicates new entry
+    setCurrentView('new');
   };
 
   const handleEditSecret = (index: number) => {
@@ -129,10 +131,15 @@ export const App = () => {
   };
 
   const handleSaveCredential = (index: number, updatedSecret: SecretEntry) => {
-    // Update the secrets array with the modified secret
-    const newSecrets = [...secrets];
-    newSecrets[index] = updatedSecret;
-    setSecrets(newSecrets);
+    if (index === -1) {
+      // Adding new credential
+      setSecrets([...secrets, updatedSecret]);
+    } else {
+      // Update the secrets array with the modified secret
+      const newSecrets = [...secrets];
+      newSecrets[index] = updatedSecret;
+      setSecrets(newSecrets);
+    }
 
     // Go back to main view
     handleBackToMain();
@@ -198,7 +205,7 @@ export const App = () => {
   }
 
   const renderCurrentView = () => {
-    if (currentView === 'edit' && isLoggedIn) {
+    if ((currentView === 'edit' || currentView === 'new') && isLoggedIn) {
       return (
         <EditCredential
           secrets={secrets}
@@ -206,6 +213,7 @@ export const App = () => {
           onSave={handleSaveCredential}
           onDelete={handleDeleteCredential}
           onCancel={handleBackToMain}
+          isNewEntry={currentView === 'new'}
         />
       );
     }
@@ -233,8 +241,13 @@ export const App = () => {
   return (
     <AppLayout>
       <AppHeader
+        currentView={currentView}
+        isLoggedIn={isLoggedIn}
         onLogout={isLoggedIn ? handleLogout : undefined}
-        onAddNew={isLoggedIn ? handleAddNew : undefined}
+        onAddNew={
+          isLoggedIn && currentView === 'main' ? handleAddNew : undefined
+        }
+        onBack={currentView !== 'main' ? handleBackToMain : undefined}
       />
       {/* Main Content */}
       <Box
