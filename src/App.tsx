@@ -4,12 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Container,
-  Heading,
-  Stack,
   Text,
   VStack,
-  HStack,
   Icon,
   Spinner,
   Alert,
@@ -147,10 +143,7 @@ export const App = () => {
 
   if (isInitializing) {
     return (
-      <Container
-        maxW={'none'}
-        w={'100%'}
-        p={4}
+      <Box
         style={{
           width: 360,
           height: 600,
@@ -163,21 +156,66 @@ export const App = () => {
           flexDirection: 'column',
         }}
       >
-        <VStack spacing={4} justify="center" minH="200px">
-          <Spinner size="lg" color="blue.500" />
-          <Text fontSize="sm" color="gray.600">
-            Loading ChromePass...
+        {/* Header */}
+        <Box
+          style={{
+            height: 56,
+            background: '#fff',
+            borderBottom: '1px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 600,
+            fontSize: 18,
+            letterSpacing: 1,
+            color: '#2d3748',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+          }}
+        >
+          <Icon as={LockIcon} color="brand.500" boxSize={5} mr={2} /> ChromePass
+        </Box>
+        {/* Main loading content */}
+        <Box
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 0,
+            overflowX: 'hidden',
+          }}
+        >
+          <VStack spacing={4} justify="center" minH="200px">
+            <Spinner size="lg" color="blue.500" />
+            <Text fontSize="sm" color="gray.600">
+              Loading ChromePass...
+            </Text>
+          </VStack>
+        </Box>
+        {/* Footer */}
+        <Box
+          style={{
+            height: 40,
+            background: '#fff',
+            borderTop: '1px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 12,
+            color: '#a0aec0',
+          }}
+        >
+          v{pkg.version} &nbsp;|&nbsp;{' '}
+          <Text as="span" color="#3182ce">
+            Help
           </Text>
-        </VStack>
-      </Container>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <Container
-      maxW={'none'}
-      w={'100%'}
-      p={3}
+    <Box
       style={{
         width: 360,
         height: 600,
@@ -190,28 +228,34 @@ export const App = () => {
         flexDirection: 'column',
       }}
     >
-      <Stack
-        spacing={3}
+      {/* Header */}
+      <Box
         style={{
-          overflowY: 'auto',
-          flex: 1,
-          paddingRight: 8,
-          paddingLeft: 8,
+          height: 56,
+          background: '#fff',
+          borderBottom: '1px solid #e5e7eb',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 600,
+          fontSize: 18,
+          letterSpacing: 1,
+          color: '#2d3748',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
         }}
       >
-        {/* Header Section */}
-        <Box textAlign="center">
-          <HStack justify="center" spacing={2} mb={0.5}>
-            <Icon as={LockIcon} color="brand.500" boxSize={4} />
-            <Heading size="sm" color="gray.800">
-              ChromePass
-            </Heading>
-          </HStack>
-          <Text color="gray.600" fontSize="xs" fontWeight="medium">
-            Unified password & TOTP manager
-          </Text>
-        </Box>
-
+        <Icon as={LockIcon} color="brand.500" boxSize={5} mr={2} /> ChromePass
+      </Box>
+      {/* Main Content */}
+      <Box
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: 12,
+          minHeight: 0,
+        }}
+      >
         {/* Error Alert */}
         {initError && (
           <Alert status="error" borderRadius="md" fontSize="xs" py={2}>
@@ -234,14 +278,25 @@ export const App = () => {
             onLogout={handleLogout}
           />
         )}
-
-        {/* Footer Section */}
-        <VStack spacing={1} align="center" mt={2}>
-          <Text fontSize="2xs" color="gray.400" fontWeight="medium">
-            v{pkg.version}
-          </Text>
-        </VStack>
-      </Stack>
-    </Container>
+      </Box>
+      {/* Footer */}
+      <Box
+        style={{
+          height: 40,
+          background: '#fff',
+          borderTop: '1px solid #e5e7eb',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 12,
+          color: '#a0aec0',
+        }}
+      >
+        v{pkg.version} &nbsp;|&nbsp;{' '}
+        <Text as="span" color="#3182ce">
+          Help
+        </Text>
+      </Box>
+    </Box>
   );
 };
