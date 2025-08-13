@@ -1,5 +1,3 @@
-// ...existing code...
-// ...existing code...
 /* eslint-disable no-console */
 import React, { useState, useEffect } from 'react';
 import {
@@ -250,34 +248,44 @@ export const App = () => {
       <Box
         style={{
           flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          padding: 12,
+          display: 'flex',
+          flexDirection: 'column',
           minHeight: 0,
+          overflow: 'hidden',
         }}
       >
-        {/* Error Alert */}
-        {initError && (
-          <Alert status="error" borderRadius="md" fontSize="xs" py={2}>
-            <AlertIcon boxSize={3} />
-            {initError}
-          </Alert>
-        )}
+        <Box
+          className="hide-scrollbar"
+          style={{
+            flex: 1,
+            overflowY: 'scroll',
+            overflowX: 'hidden',
+            padding: '0 12px',
+          }}
+        >
+          {/* Error Alert */}
+          {initError && (
+            <Alert status="error" borderRadius="md" fontSize="xs" py={2}>
+              <AlertIcon boxSize={3} />
+              {initError}
+            </Alert>
+          )}
 
-        {/* Main Content */}
-        {!isLoggedIn ? (
-          <LoginSection
-            onLogin={handleLogin}
-            onSessionRestore={handleSessionRestore}
-            autoLoginFailed={autoLoginAttempted}
-          />
-        ) : (
-          <UnifiedSection
-            masterPassword={masterPassword}
-            secrets={secrets}
-            onLogout={handleLogout}
-          />
-        )}
+          {/* Main Content */}
+          {!isLoggedIn ? (
+            <LoginSection
+              onLogin={handleLogin}
+              onSessionRestore={handleSessionRestore}
+              autoLoginFailed={autoLoginAttempted}
+            />
+          ) : (
+            <UnifiedSection
+              masterPassword={masterPassword}
+              secrets={secrets}
+              onLogout={handleLogout}
+            />
+          )}
+        </Box>
       </Box>
       {/* Footer */}
       <Box

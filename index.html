@@ -4,7 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Surya</title>
-    <link rel="stylesheet" href="/src/popup.css" />
+    <style>
+      .hide-scrollbar {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* Internet Explorer 10+ */
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none; /* WebKit */
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
