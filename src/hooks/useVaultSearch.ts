@@ -32,20 +32,13 @@ export const useVaultSearch = (
 
   // Generate credentials for matched secrets
   const generateCredentialsForSecrets = useCallback(
-    async (
-      matchedSecrets: SecretEntry[],
-      indices: number[],
-      showLoading = true,
-    ) => {
+    async (matchedSecrets: SecretEntry[], indices: number[]) => {
       if (!masterPassword) {
         setCredentialCards([]);
         return;
       }
 
-      if (showLoading) {
-        setIsGenerating(true);
-      }
-
+      setIsGenerating(true);
       try {
         const cards: CredentialCard[] = [];
 
@@ -122,9 +115,7 @@ export const useVaultSearch = (
           isClosable: true,
         });
       } finally {
-        if (showLoading) {
-          setIsGenerating(false);
-        }
+        setIsGenerating(false);
       }
     },
     [masterPassword, toast],
@@ -165,10 +156,13 @@ export const useVaultSearch = (
   // Generate credentials when search results change
   useEffect(() => {
     if (debouncedQuery.trim()) {
-      generateCredentialsForSecrets(filteredSecrets, matchedIndices, true);
+      generateCredentialsForSecrets(filteredSecrets, matchedIndices);
     } else {
       // Clear results when query is empty
-      setCredentialCards([]);
+      // setCredentialCards([]);
+
+      // when query is empty show everything.
+      generateCredentialsForSecrets(filteredSecrets, matchedIndices);
     }
   }, [
     debouncedQuery,

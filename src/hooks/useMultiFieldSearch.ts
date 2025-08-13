@@ -20,8 +20,7 @@ export const useMultiFieldSearch = (
   const searchResults = useMemo(() => {
     const trimmedQuery = query.trim();
 
-    // If query is too short or empty, return all secrets
-    if (trimmedQuery.length < minQueryLength) {
+    if (trimmedQuery.length <= minQueryLength) {
       return {
         filteredSecrets: secrets,
         matchedIndices: secrets.map((_, index) => index),

@@ -129,7 +129,6 @@ export const App = () => {
 
     // Save session data for persistence
     try {
-      console.log('handle login: encryptedData', encryptedData);
       await storageService.saveSession({
         encryptedSecretsFile: encryptedData,
         masterPassword: rememberPassword ? password : undefined,
