@@ -1,3 +1,5 @@
+// ...existing code...
+// ...existing code...
 /* eslint-disable no-console */
 import React, { useState, useEffect } from 'react';
 import {
@@ -17,7 +19,6 @@ import { LockIcon } from '@chakra-ui/icons';
 import pkg from '../package.json';
 import { LoginSection } from './components/LoginSection';
 import { UnifiedSection } from './components/UnifiedSection';
-import { isChromeExtensionEnv } from './utils/browser';
 import { SecretEntry, decryptSecretsFile } from './crypto';
 import { storageService } from './services/storage';
 
@@ -147,10 +148,20 @@ export const App = () => {
   if (isInitializing) {
     return (
       <Container
-        maxW={isChromeExtensionEnv() ? 'none' : 'sm'}
-        w={isChromeExtensionEnv() ? '100%' : 'auto'}
+        maxW={'none'}
+        w={'100%'}
         p={4}
-        className={isChromeExtensionEnv() ? 'popup-container' : ''}
+        style={{
+          width: 360,
+          height: 600,
+          background: '#f9f9f9',
+          borderRadius: 8,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          overflow: 'hidden',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
         <VStack spacing={4} justify="center" minH="200px">
           <Spinner size="lg" color="blue.500" />
@@ -164,16 +175,34 @@ export const App = () => {
 
   return (
     <Container
-      maxW={isChromeExtensionEnv() ? 'none' : 'sm'}
-      w={isChromeExtensionEnv() ? '100%' : 'auto'}
+      maxW={'none'}
+      w={'100%'}
       p={3}
-      className={isChromeExtensionEnv() ? 'popup-container' : ''}
+      style={{
+        width: 360,
+        height: 600,
+        background: '#f9f9f9',
+        borderRadius: 8,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        overflow: 'hidden',
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
-      <Stack spacing={3} className="scrollable-content">
+      <Stack
+        spacing={3}
+        style={{
+          overflowY: 'auto',
+          flex: 1,
+          paddingRight: 8,
+          paddingLeft: 8,
+        }}
+      >
         {/* Header Section */}
         <Box textAlign="center">
           <HStack justify="center" spacing={2} mb={0.5}>
-            <Icon as={LockIcon} color="blue.500" boxSize={4} />
+            <Icon as={LockIcon} color="brand.500" boxSize={4} />
             <Heading size="sm" color="gray.800">
               ChromePass
             </Heading>

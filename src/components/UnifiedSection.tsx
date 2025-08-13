@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   Button,
-  ButtonGroup,
   HStack,
   Text,
   VStack,
@@ -36,10 +35,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
     () => updateTotpCodes(), // Update TOTP codes
   );
 
-  const [cardVariant, setCardVariant] = useState<
-    'grid' | 'chips' | 'microLabels'
-  >('grid');
-
   return (
     <VStack spacing={2} w="full">
       {/* Header with logout */}
@@ -48,26 +43,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
           🔓 Vault ({secrets.length})
         </Text>
         <HStack spacing={2}>
-          <ButtonGroup size="xs" isAttached variant="outline">
-            <Button
-              onClick={() => setCardVariant('grid')}
-              colorScheme={cardVariant === 'grid' ? 'blue' : undefined}
-            >
-              Grid
-            </Button>
-            <Button
-              onClick={() => setCardVariant('chips')}
-              colorScheme={cardVariant === 'chips' ? 'blue' : undefined}
-            >
-              Chips
-            </Button>
-            <Button
-              onClick={() => setCardVariant('microLabels')}
-              colorScheme={cardVariant === 'microLabels' ? 'blue' : undefined}
-            >
-              Micro
-            </Button>
-          </ButtonGroup>
           <Button size="xs" variant="outline" onClick={onLogout}>
             Logout
           </Button>
@@ -95,7 +70,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
             <CredentialCardComponent
               key={`${card.secretEntry.name}-${index}`}
               card={card}
-              variant={cardVariant}
             />
           ))}
         </VStack>

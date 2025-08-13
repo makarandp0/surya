@@ -127,7 +127,7 @@ export const VaultSearch: React.FC<VaultSearchProps> = ({
             aria-label="Use active tab domain"
             icon={<RepeatIcon />}
             onClick={handleRefreshDomain}
-            colorScheme="blue"
+            colorScheme="brand"
             variant="outline"
             size="sm"
           />

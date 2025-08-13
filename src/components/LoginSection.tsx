@@ -329,7 +329,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                   aria-label="Select file"
                   icon={<AttachmentIcon />}
                   onClick={() => fileInputRef.current?.click()}
-                  colorScheme="blue"
+                  colorScheme="brand"
                   variant="outline"
                   size="sm"
                 />
@@ -346,7 +346,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
 
           {/* Login Button */}
           <Button
-            colorScheme="blue"
+            colorScheme="brand"
             size="sm"
             w="full"
             onClick={handleLogin}
