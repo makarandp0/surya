@@ -1,21 +1,15 @@
-import React, { useCallback } from 'react';
-import { Box, VStack, Alert, AlertIcon, useToast } from '@chakra-ui/react';
+import React from 'react';
+import { Box, VStack, Alert, AlertIcon } from '@chakra-ui/react';
 import { UnifiedSectionProps } from '../types/credential';
 import { useVaultSearch } from '../hooks/useVaultSearch';
-import { useTotpTimer } from '../hooks/useTotpTimer';
-import { useCredentialGenerator } from '../hooks/useCredentialGenerator';
 import { FlipCredentialCard } from './FlipCredentialCard';
 import { VaultSearch } from './VaultSearch';
-import { TotpTimer } from './TotpTimer';
 
 export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
   masterPassword,
   secrets,
   onEditSecret,
 }) => {
-  const toast = useToast();
-  const { generateCredentialCard } = useCredentialGenerator(masterPassword);
-
   const {
     query,
     setQuery,
@@ -25,93 +19,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
     filteredCount,
     totalCount,
   } = useVaultSearch(masterPassword, secrets);
-
-  // Check if any entry has TOTP for the timer display
-  const hasAnyTotp = filteredSecrets.some((secret) => secret.secret);
-
-  const { totpTimeRemaining } = useTotpTimer(hasAnyTotp, () => {
-    // TOTP codes will be updated individually by each CredentialEntry component
-    // This is just for the global timer display
-  });
-
-  const handleCopyUsername = useCallback(
-    async (index: number) => {
-      try {
-        const secretEntry = secrets[index];
-        const card = await generateCredentialCard(secretEntry, index);
-        if (card.username) {
-          await navigator.clipboard.writeText(card.username);
-          toast({
-            status: 'success',
-            title: 'Username copied!',
-            duration: 2000,
-            isClosable: true,
-          });
-        }
-      } catch (_error) {
-        toast({
-          status: 'error',
-          title: 'Failed to copy username',
-          duration: 3000,
-          isClosable: true,
-          position: 'top',
-        });
-      }
-    },
-    [secrets, generateCredentialCard, toast],
-  );
-
-  const handleCopyPassword = useCallback(
-    async (index: number) => {
-      try {
-        const secretEntry = secrets[index];
-        const card = await generateCredentialCard(secretEntry, index);
-        await navigator.clipboard.writeText(card.password);
-        toast({
-          status: 'success',
-          title: 'Password copied!',
-          duration: 2000,
-          isClosable: true,
-        });
-      } catch (_error) {
-        const msg = _error instanceof Error ? _error.message : 'Unknown error';
-        toast({
-          status: 'error',
-          title: 'Failed to copy password:' + msg,
-          duration: null,
-          isClosable: true,
-          position: 'top',
-        });
-      }
-    },
-    [secrets, generateCredentialCard, toast],
-  );
-
-  const handleCopyTotp = useCallback(
-    async (index: number) => {
-      try {
-        const secretEntry = secrets[index];
-        const card = await generateCredentialCard(secretEntry, index);
-        if (card.totpCode) {
-          await navigator.clipboard.writeText(card.totpCode);
-          toast({
-            status: 'success',
-            title: 'TOTP code copied!',
-            duration: 2000,
-            isClosable: true,
-          });
-        }
-      } catch (_error) {
-        toast({
-          status: 'error',
-          title: 'Failed to copy TOTP code',
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-    },
-    [secrets, generateCredentialCard, toast],
-  );
 
   return (
     <VStack spacing={2} w="full" pt={3}>
@@ -127,9 +34,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
       {/* Generated Credential Cards */}
       {filteredSecrets.length > 0 && (
         <VStack spacing={2} w="full">
-          {/* Global TOTP Timer - show only if any entry has TOTP */}
-          {hasAnyTotp && <TotpTimer timeRemaining={totpTimeRemaining} />}
-
           {filteredSecrets.map((secret, index) => (
             <FlipCredentialCard
               key={`${secret.name}-${index}`}
@@ -137,9 +41,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
               originalIndex={matchedIndices[index]}
               masterPassword={masterPassword}
               onEdit={onEditSecret}
-              onCopyUsername={handleCopyUsername}
-              onCopyPassword={handleCopyPassword}
-              onCopyTotp={handleCopyTotp}
             />
           ))}
         </VStack>
@@ -161,8 +62,6 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
           </Alert>
         </Box>
       )}
-
-      {/* Secrets browser removed */}
     </VStack>
   );
 };

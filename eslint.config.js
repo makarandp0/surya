@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import react from 'eslint-plugin-react';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
 
@@ -17,11 +18,15 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      react: react,
       import: importPlugin,
     },
     settings: {
       'import/resolver': {
         typescript: true,
+      },
+      react: {
+        version: 'detect',
       },
     },
     rules: {
@@ -68,6 +73,14 @@ export default tseslint.config(
       // Function style preferences
       'func-style': ['error', 'expression'],
       'prefer-arrow-callback': 'error',
+
+      // React specific rules
+      'react/jsx-uses-react': 'off', // Not needed with React 17+
+      'react/react-in-jsx-scope': 'off', // Not needed with React 17+
+      'react/jsx-uses-vars': 'error',
+      'react/no-unused-prop-types': 'error',
+      'react/require-default-props': 'off', // We use TypeScript defaults
+      'react/prop-types': 'off', // We use TypeScript instead
     },
   },
   // Test files have slightly different rules

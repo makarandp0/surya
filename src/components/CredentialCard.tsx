@@ -1,31 +1,26 @@
 import React from 'react';
 import {
-  Box,
+  VStack,
   HStack,
   Text,
-  IconButton,
+  Button,
   Card,
   CardBody,
+  Badge,
 } from '@chakra-ui/react';
-import { FiUser, FiKey, FiClock, FiMoreVertical } from 'react-icons/fi';
+import { FiEdit3, FiGlobe, FiUser } from 'react-icons/fi';
 import { SecretEntry, normalizeDomainFromUrl } from '../crypto';
 
 interface CredentialEntryProps {
   secretEntry: SecretEntry;
   originalIndex: number;
   onEdit: (index: number) => void;
-  onCopyUsername?: (index: number) => void;
-  onCopyPassword?: (index: number) => void;
-  onCopyTotp?: (index: number) => void;
 }
 
 export const CredentialCard: React.FC<CredentialEntryProps> = ({
   secretEntry,
   originalIndex,
   onEdit,
-  onCopyUsername,
-  onCopyPassword,
-  onCopyTotp,
 }) => {
   // Extract basic display information from SecretEntry
   const domain = secretEntry.website
@@ -34,98 +29,71 @@ export const CredentialCard: React.FC<CredentialEntryProps> = ({
 
   const title =
     secretEntry.name || domain || secretEntry.username || 'Credential';
-  const subtitle = (() => {
-    if (secretEntry.username && domain) {
-      return `${secretEntry.username}@${domain}`;
-    }
-    return secretEntry.username || domain || '';
-  })();
 
-  const handleCardClick = () => {
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     onEdit(originalIndex);
   };
 
-  const handleCopyUsername = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onCopyUsername?.(originalIndex);
-  };
-
-  const handleCopyPassword = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onCopyPassword?.(originalIndex);
-  };
-
-  const handleCopyTotp = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onCopyTotp?.(originalIndex);
-  };
-
   return (
-    <Card
-      w="full"
-      variant="elevated"
-      borderRadius="lg"
-      cursor="pointer"
-      onClick={handleCardClick}
-    >
-      <CardBody px={3} py={2}>
-        <HStack spacing={3} align="center">
-          {/* Main info */}
-          <Box flex={1} minW={0}>
-            <Text
-              fontSize="md"
-              fontWeight="semibold"
-              color="gray.800"
-              noOfLines={1}
-            >
-              {title}
-            </Text>
-            {subtitle && (
-              <Text fontSize="sm" color="gray.500" noOfLines={1}>
-                {subtitle}
+    <Card w="full" h="180px" variant="elevated" borderRadius="lg">
+      <CardBody p={4} h="full">
+        <VStack spacing={3} h="full" justify="center" align="stretch">
+          {/* Header */}
+          <HStack justify="space-between" align="flex-start">
+            <VStack align="flex-start" spacing={1} flex={1}>
+              <Text
+                fontSize="xl"
+                fontWeight="bold"
+                color="gray.800"
+                noOfLines={1}
+              >
+                {title}
               </Text>
-            )}
-          </Box>
-
-          {/* Action icons */}
-          <HStack spacing={1}>
-            {secretEntry.username && (
-              <IconButton
-                aria-label="Copy username"
-                icon={<FiUser />}
-                size="sm"
-                variant="ghost"
-                onClick={handleCopyUsername}
-              />
-            )}
-            <IconButton
-              aria-label="Copy password"
-              icon={<FiKey />}
+              {domain && (
+                <HStack spacing={1} align="center">
+                  <FiGlobe size={14} />
+                  <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                    {domain}
+                  </Text>
+                </HStack>
+              )}
+            </VStack>
+            <Button
               size="sm"
-              variant="ghost"
-              onClick={handleCopyPassword}
-            />
-            {secretEntry.secret && (
-              <IconButton
-                aria-label="Copy TOTP"
-                icon={<FiClock />}
-                size="sm"
-                variant="ghost"
-                onClick={handleCopyTotp}
-              />
-            )}
-            <IconButton
-              aria-label="More"
-              icon={<FiMoreVertical />}
-              size="sm"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                // This will now navigate to edit page via card click
-              }}
-            />
+              leftIcon={<FiEdit3 />}
+              onClick={handleEditClick}
+              colorScheme="blue"
+              variant="outline"
+            >
+              Edit
+            </Button>
           </HStack>
-        </HStack>
+
+          {/* Metadata */}
+          <VStack spacing={2} align="stretch">
+            {secretEntry.username && (
+              <HStack spacing={2} align="center">
+                <FiUser size={16} color="gray" />
+                <Text fontSize="md" color="gray.600" noOfLines={1}>
+                  {secretEntry.username}
+                </Text>
+              </HStack>
+            )}
+
+            {/* Features badges */}
+            <HStack spacing={2}>
+              <Badge colorScheme="blue" variant="subtle" size="sm">
+                Password
+              </Badge>
+              {secretEntry.secret && (
+                <Badge colorScheme="green" variant="subtle" size="sm">
+                  TOTP
+                </Badge>
+              )}
+            </HStack>
+          </VStack>
+        </VStack>
       </CardBody>
     </Card>
   );

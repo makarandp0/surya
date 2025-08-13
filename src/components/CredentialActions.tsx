@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
-  Box,
   VStack,
   HStack,
-  Text,
   Input,
   Button,
   useClipboard,
@@ -13,9 +11,7 @@ import {
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
-import { FiCopy, FiRefreshCw } from 'react-icons/fi';
 import { SecretEntry } from '../crypto';
-import { CredentialCard } from '../types/credential';
 import { useCredentialGenerator } from '../hooks/useCredentialGenerator';
 import { TotpTimer } from './TotpTimer';
 
@@ -30,10 +26,8 @@ export const CredentialActions: React.FC<CredentialActionsProps> = ({
   originalIndex,
   masterPassword,
 }) => {
-  const [card, setCard] = useState<CredentialCard | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { generateCredentialCard } = useCredentialGenerator(masterPassword);
+  const { card, isLoading, error, generateCredentialCard } =
+    useCredentialGenerator(masterPassword);
 
   const passwordClipboard = useClipboard(card?.password || '');
   const totpClipboard = useClipboard(card?.totpCode || '');
@@ -42,62 +36,20 @@ export const CredentialActions: React.FC<CredentialActionsProps> = ({
   // Generate credential card on mount
   useEffect(() => {
     const generateCard = async () => {
-      if (!masterPassword) {
-        setError('Master password is required');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-        const generatedCard = await generateCredentialCard(
-          secretEntry,
-          originalIndex,
-        );
-        setCard(generatedCard);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to generate credential';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
+      await generateCredentialCard(secretEntry, originalIndex);
     };
 
     generateCard();
-  }, [secretEntry, originalIndex, masterPassword, generateCredentialCard]);
-
-  const handleRefresh = async () => {
-    if (!masterPassword) {
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      const generatedCard = await generateCredentialCard(
-        secretEntry,
-        originalIndex,
-      );
-      setCard(generatedCard);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to refresh credential';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [secretEntry, originalIndex, generateCredentialCard]);
 
   if (isLoading) {
     return (
-      <Card w="full" variant="elevated" borderRadius="lg">
-        <CardBody p={4}>
-          <VStack spacing={4} align="stretch">
-            <Skeleton height="40px" />
-            <Skeleton height="40px" />
-            {secretEntry.secret && <Skeleton height="40px" />}
+      <Card w="full" h="180px" variant="elevated" borderRadius="lg">
+        <CardBody p={3} h="full">
+          <VStack spacing={3} align="stretch" h="full" justify="center">
+            <Skeleton height="32px" />
+            <Skeleton height="32px" />
+            {secretEntry.secret && <Skeleton height="32px" />}
           </VStack>
         </CardBody>
       </Card>
@@ -106,15 +58,14 @@ export const CredentialActions: React.FC<CredentialActionsProps> = ({
 
   if (error) {
     return (
-      <Card w="full" variant="elevated" borderRadius="lg">
-        <CardBody p={4}>
-          <Alert status="error" borderRadius="md">
-            <AlertIcon />
-            {error}
-          </Alert>
-          <Button onClick={handleRefresh} mt={3} size="sm">
-            Retry
-          </Button>
+      <Card w="full" h="180px" variant="elevated" borderRadius="lg">
+        <CardBody p={3} h="full">
+          <VStack spacing={3} align="stretch" h="full" justify="center">
+            <Alert status="error" borderRadius="md">
+              <AlertIcon />
+              {error}
+            </Alert>
+          </VStack>
         </CardBody>
       </Card>
     );
@@ -122,117 +73,101 @@ export const CredentialActions: React.FC<CredentialActionsProps> = ({
 
   if (!card) {
     return (
-      <Card w="full" variant="elevated" borderRadius="lg">
-        <CardBody p={4}>
-          <Alert status="warning" borderRadius="md">
-            <AlertIcon />
-            Unable to generate credential data
-          </Alert>
+      <Card w="full" h="180px" variant="elevated" borderRadius="lg">
+        <CardBody p={3} h="full">
+          <VStack spacing={3} align="stretch" h="full" justify="center">
+            <Alert status="warning" borderRadius="md">
+              <AlertIcon />
+              Unable to generate credential data
+            </Alert>
+          </VStack>
         </CardBody>
       </Card>
     );
   }
 
   return (
-    <Card w="full" variant="elevated" borderRadius="lg">
-      <CardBody p={4}>
-        <VStack spacing={4} align="stretch">
-          {/* Header with refresh button */}
-          <HStack justify="space-between">
-            <Text fontSize="lg" fontWeight="semibold">
-              Credential Details
-            </Text>
-            <Button
-              size="sm"
-              variant="ghost"
-              leftIcon={<FiRefreshCw />}
-              onClick={handleRefresh}
-              isLoading={isLoading}
-            >
-              Refresh
-            </Button>
-          </HStack>
-
+    <Card w="full" h="180px" variant="elevated" borderRadius="lg">
+      <CardBody p={4} h="full">
+        <VStack spacing={3} align="stretch" h="full" justify="center">
           {/* Username */}
           {card.username && (
-            <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.600">
-                Username
-              </Text>
-              <HStack>
-                <Input
-                  value={card.username}
-                  isReadOnly
-                  size="sm"
-                  bg="gray.50"
-                />
-                <Button
-                  size="sm"
-                  leftIcon={<FiCopy />}
-                  onClick={usernameClipboard.onCopy}
-                  colorScheme={usernameClipboard.hasCopied ? 'green' : 'blue'}
-                >
-                  {usernameClipboard.hasCopied ? 'Copied!' : 'Copy'}
-                </Button>
-              </HStack>
-            </Box>
-          )}
-
-          {/* Password */}
-          <Box>
-            <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.600">
-              Generated Password
-            </Text>
-            <HStack>
+            <HStack spacing={2}>
               <Input
-                value={card.password}
-                type="password"
+                value={card.username}
+                placeholder="Username"
                 isReadOnly
                 size="sm"
                 bg="gray.50"
-                fontFamily="monospace"
+                flex={1}
+                fontSize="sm"
               />
               <Button
                 size="sm"
-                leftIcon={<FiCopy />}
-                onClick={passwordClipboard.onCopy}
-                colorScheme={passwordClipboard.hasCopied ? 'green' : 'blue'}
+                onClick={usernameClipboard.onCopy}
+                colorScheme={usernameClipboard.hasCopied ? 'green' : 'gray'}
+                variant={usernameClipboard.hasCopied ? 'solid' : 'outline'}
+                minW="60px"
               >
-                {passwordClipboard.hasCopied ? 'Copied!' : 'Copy'}
+                {usernameClipboard.hasCopied ? '✓' : 'Copy'}
               </Button>
             </HStack>
-          </Box>
+          )}
+
+          {/* Password */}
+          <HStack spacing={2}>
+            <Input
+              value={card.password}
+              type="password"
+              placeholder="Password"
+              isReadOnly
+              size="sm"
+              bg="gray.50"
+              fontFamily="monospace"
+              flex={1}
+              fontSize="sm"
+            />
+            <Button
+              size="sm"
+              onClick={passwordClipboard.onCopy}
+              colorScheme={passwordClipboard.hasCopied ? 'green' : 'blue'}
+              variant={passwordClipboard.hasCopied ? 'solid' : 'outline'}
+              minW="60px"
+            >
+              {passwordClipboard.hasCopied ? '✓' : 'Copy'}
+            </Button>
+          </HStack>
 
           {/* TOTP */}
           {card.totpCode && (
-            <Box>
-              <Text fontSize="sm" fontWeight="medium" mb={1} color="gray.600">
-                TOTP Code
-              </Text>
-              <HStack>
+            <VStack spacing={1} align="stretch">
+              <HStack spacing={2}>
                 <Input
                   value={card.totpCode}
+                  placeholder="TOTP Code"
                   isReadOnly
                   size="sm"
                   bg="gray.50"
                   fontFamily="monospace"
                   letterSpacing="wider"
+                  flex={1}
+                  fontSize="sm"
+                  fontWeight="bold"
                 />
                 <Button
                   size="sm"
-                  leftIcon={<FiCopy />}
                   onClick={totpClipboard.onCopy}
-                  colorScheme={totpClipboard.hasCopied ? 'green' : 'blue'}
+                  colorScheme={totpClipboard.hasCopied ? 'green' : 'orange'}
+                  variant={totpClipboard.hasCopied ? 'solid' : 'outline'}
+                  minW="60px"
                 >
-                  {totpClipboard.hasCopied ? 'Copied!' : 'Copy'}
+                  {totpClipboard.hasCopied ? '✓' : 'Copy'}
                 </Button>
               </HStack>
               {card.totpTimeRemaining && (
-                <Box mt={2}>
-                  <TotpTimer timeRemaining={card.totpTimeRemaining} />
-                </Box>
+                <TotpTimer timeRemaining={card.totpTimeRemaining} />
               )}
-            </Box>
+            </VStack>
           )}
         </VStack>
       </CardBody>
