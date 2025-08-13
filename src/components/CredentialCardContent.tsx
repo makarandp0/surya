@@ -1,18 +1,14 @@
 import React from 'react';
-import { VStack, HStack, Text, Button, Badge } from '@chakra-ui/react';
-import { FiEdit3, FiGlobe, FiUser } from 'react-icons/fi';
+import { VStack, HStack, Text, Badge } from '@chakra-ui/react';
+import { FiGlobe, FiUser } from 'react-icons/fi';
 import { SecretEntry, normalizeDomainFromUrl } from '../crypto';
 
 interface CredentialCardContentProps {
   secretEntry: SecretEntry;
-  originalIndex: number;
-  onEdit: (index: number) => void;
 }
 
 export const CredentialCardContent: React.FC<CredentialCardContentProps> = ({
   secretEntry,
-  originalIndex,
-  onEdit,
 }) => {
   // Extract basic display information from SecretEntry
   const domain = secretEntry.website
@@ -21,11 +17,6 @@ export const CredentialCardContent: React.FC<CredentialCardContentProps> = ({
 
   const title =
     secretEntry.name || domain || secretEntry.username || 'Credential';
-
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEdit(originalIndex);
-  };
 
   return (
     <VStack spacing={3} h="full" justify="center" align="stretch">
@@ -44,15 +35,6 @@ export const CredentialCardContent: React.FC<CredentialCardContentProps> = ({
             </HStack>
           )}
         </VStack>
-        <Button
-          size="sm"
-          leftIcon={<FiEdit3 />}
-          onClick={handleEditClick}
-          colorScheme="blue"
-          variant="outline"
-        >
-          Edit
-        </Button>
       </HStack>
 
       {/* Metadata */}

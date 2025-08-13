@@ -9,7 +9,7 @@ import {
   Text,
   Spacer,
 } from '@chakra-ui/react';
-import { FiRotateCw } from 'react-icons/fi';
+import { FiEdit, FiRotateCw } from 'react-icons/fi';
 import { SecretEntry, normalizeDomainFromUrl } from '../crypto';
 import { CredentialCardContent } from './CredentialCardContent';
 import { CredentialActionsContent } from './CredentialActionsContent';
@@ -32,6 +32,10 @@ export const FlipCredentialCard: React.FC<FlipCredentialCardProps> = ({
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
   };
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit(originalIndex);
+  };
 
   // Extract title for the header
   const domain = secretEntry.website
@@ -46,7 +50,7 @@ export const FlipCredentialCard: React.FC<FlipCredentialCardProps> = ({
       <CardHeader p={3} pb={0}>
         <HStack align="center">
           <Text
-            fontSize="sm"
+            fontSize="xs"
             fontWeight="medium"
             color="gray.600"
             noOfLines={1}
@@ -59,8 +63,17 @@ export const FlipCredentialCard: React.FC<FlipCredentialCardProps> = ({
           </Text>
           <IconButton
             aria-label={isFlipped ? 'Show info' : 'Show actions'}
+            icon={<FiEdit />}
+            size="lg"
+            onClick={handleEditClick}
+            colorScheme="blue"
+            variant="ghost"
+            borderRadius="full"
+          />
+          <IconButton
+            aria-label={isFlipped ? 'Show info' : 'Show actions'}
             icon={<FiRotateCw />}
-            size="xs"
+            size="lg"
             onClick={handleFlip}
             colorScheme="blue"
             variant="ghost"
@@ -99,11 +112,7 @@ export const FlipCredentialCard: React.FC<FlipCredentialCardProps> = ({
                 transform: 'rotateY(0deg)',
               }}
             >
-              <CredentialCardContent
-                secretEntry={secretEntry}
-                originalIndex={originalIndex}
-                onEdit={onEdit}
-              />
+              <CredentialCardContent secretEntry={secretEntry} />
             </Box>
 
             {/* Back Side - CredentialActions Content */}
