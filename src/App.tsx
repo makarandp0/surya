@@ -90,7 +90,6 @@ export const App = () => {
               // Update last accessed
               await storageService.updateLastAccessed();
               setInitError(null);
-              return;
             } catch (error) {
               // Auto-login failed, clear corrupted session
 
