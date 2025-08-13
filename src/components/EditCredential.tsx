@@ -1,29 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   VStack,
-  HStack,
   Text,
   Input,
   Button,
   FormControl,
   FormLabel,
   Card,
-  CardHeader,
   CardBody,
-  IconButton,
-  useToast,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
 } from '@chakra-ui/react';
-import { FiSave, FiTrash2 } from 'react-icons/fi';
 import { SecretEntry } from '../crypto';
+import { COLORS } from '../constants/colors';
 
 interface EditCredentialProps {
   secrets: SecretEntry[];
@@ -32,19 +20,18 @@ interface EditCredentialProps {
   onDelete: (index: number) => void;
   onCancel: () => void;
   isNewEntry?: boolean;
+  onFormDataChange?: (formData: SecretEntry) => void;
 }
 
 export const EditCredential: React.FC<EditCredentialProps> = ({
   secrets,
   secretIndex,
-  onSave,
-  onDelete,
+  onSave: _onSave,
+  onDelete: _onDelete,
   onCancel,
   isNewEntry = false,
+  onFormDataChange,
 }) => {
-  const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
   const secret = isNewEntry ? null : secrets[secretIndex];
 
   const [formData, setFormData] = useState({
@@ -55,6 +42,20 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
     passwordLength: secret?.passwordLength || 16,
     includeSymbols: secret?.includeSymbols || false,
   });
+
+  // Pass current form data to parent for footer actions
+  useEffect(() => {
+    const currentFormAsSecret: SecretEntry = {
+      ...(secret || {}),
+      name: formData.name,
+      website: formData.website,
+      username: formData.username,
+      secret: formData.secret,
+      passwordLength: formData.passwordLength,
+      includeSymbols: formData.includeSymbols,
+    };
+    onFormDataChange?.(currentFormAsSecret);
+  }, [formData, secret, onFormDataChange]);
 
   if (!isNewEntry && (secretIndex === -1 || !secret)) {
     return (
@@ -74,114 +75,164 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
     }));
   };
 
-  const handleSave = () => {
-    const updatedSecret: SecretEntry = {
-      ...(secret || {}),
-      name: formData.name,
-      website: formData.website,
-      username: formData.username,
-      secret: formData.secret,
-      passwordLength: formData.passwordLength,
-      includeSymbols: formData.includeSymbols,
-    };
-
-    onSave(secretIndex, updatedSecret);
-    toast({
-      title: isNewEntry ? 'Entry Created' : 'Secret Updated',
-      description: isNewEntry
-        ? 'Your new entry has been created successfully.'
-        : 'Your changes have been saved successfully.',
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    });
-  };
-
-  const handleDelete = () => {
-    onOpen();
-  };
-
-  const confirmDelete = () => {
-    onDelete(secretIndex);
-    toast({
-      title: 'Secret Deleted',
-      description: 'The secret has been removed.',
-      status: 'info',
-      duration: 3000,
-      isClosable: true,
-    });
-    onClose();
-  };
-
-  const handleCancel = () => {
-    onCancel();
-  };
-
   return (
     <>
-      <VStack spacing={4} w="full" p={4}>
-        {/* Delete button for existing entries */}
-        {!isNewEntry && (
-          <HStack w="full" justify="flex-end">
-            <IconButton
-              aria-label="Delete secret"
-              icon={<FiTrash2 />}
-              colorScheme="red"
-              variant="ghost"
-              onClick={handleDelete}
-            />
-          </HStack>
-        )}
-
+      <VStack spacing={4} w="full" p={4} pt={2}>
         {/* Edit Form */}
-        <Card w="full" maxW="md">
-          <CardHeader pb={2}>
-            <Text fontSize="md" fontWeight="medium">
-              Secret Details
-            </Text>
-          </CardHeader>
-          <CardBody pt={0}>
+        <Card
+          w="full"
+          maxW="md"
+          shadow="sm"
+          borderRadius="lg"
+          border={`1px solid ${COLORS.border}`}
+        >
+          <CardBody pt={4} pb={4}>
             <VStack spacing={4}>
+              {/* Name Field */}
               <FormControl>
-                <FormLabel fontSize="sm">Name</FormLabel>
+                <FormLabel
+                  fontSize="sm"
+                  fontWeight="medium"
+                  color={COLORS.primary}
+                  mb={1.5}
+                  letterSpacing="0.01em"
+                >
+                  Display Name
+                </FormLabel>
                 <Input
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Enter credential name"
+                  placeholder="e.g., Google Account, Work Email"
+                  fontSize="md"
+                  h={10}
+                  borderRadius="md"
+                  borderColor={COLORS.border}
+                  _hover={{ borderColor: COLORS.secondary }}
+                  _focus={{
+                    borderColor: COLORS.link,
+                    boxShadow: `0 0 0 1px ${COLORS.link}`,
+                  }}
+                  _placeholder={{
+                    color: COLORS.secondary,
+                    fontSize: 'sm',
+                  }}
                 />
               </FormControl>
 
+              {/* Website Field */}
               <FormControl>
-                <FormLabel fontSize="sm">Website</FormLabel>
+                <FormLabel
+                  fontSize="sm"
+                  fontWeight="medium"
+                  color={COLORS.primary}
+                  mb={1.5}
+                  letterSpacing="0.01em"
+                >
+                  Website URL
+                </FormLabel>
                 <Input
                   value={formData.website}
                   onChange={(e) => handleInputChange('website', e.target.value)}
-                  placeholder="Enter website URL"
+                  placeholder="e.g., https://google.com, company.com"
+                  fontSize="md"
+                  h={10}
+                  borderRadius="md"
+                  borderColor={COLORS.border}
+                  _hover={{ borderColor: COLORS.secondary }}
+                  _focus={{
+                    borderColor: COLORS.link,
+                    boxShadow: `0 0 0 1px ${COLORS.link}`,
+                  }}
+                  _placeholder={{
+                    color: COLORS.secondary,
+                    fontSize: 'sm',
+                  }}
                 />
               </FormControl>
 
+              {/* Username Field */}
               <FormControl>
-                <FormLabel fontSize="sm">Username</FormLabel>
+                <FormLabel
+                  fontSize="sm"
+                  fontWeight="medium"
+                  color={COLORS.primary}
+                  mb={1.5}
+                  letterSpacing="0.01em"
+                >
+                  Username / Email
+                </FormLabel>
                 <Input
                   value={formData.username}
                   onChange={(e) =>
                     handleInputChange('username', e.target.value)
                   }
-                  placeholder="Enter username"
+                  placeholder="e.g., john.doe@example.com"
+                  fontSize="md"
+                  h={10}
+                  borderRadius="md"
+                  borderColor={COLORS.border}
+                  _hover={{ borderColor: COLORS.secondary }}
+                  _focus={{
+                    borderColor: COLORS.link,
+                    boxShadow: `0 0 0 1px ${COLORS.link}`,
+                  }}
+                  _placeholder={{
+                    color: COLORS.secondary,
+                    fontSize: 'sm',
+                  }}
                 />
               </FormControl>
 
+              {/* TOTP Secret Field */}
               <FormControl>
-                <FormLabel fontSize="sm">TOTP Secret (Optional)</FormLabel>
+                <FormLabel
+                  fontSize="sm"
+                  fontWeight="medium"
+                  color={COLORS.primary}
+                  mb={1.5}
+                  letterSpacing="0.01em"
+                >
+                  TOTP Secret{' '}
+                  <Text
+                    as="span"
+                    color={COLORS.secondary}
+                    fontWeight="normal"
+                    ml={1}
+                  >
+                    (Optional)
+                  </Text>
+                </FormLabel>
                 <Input
                   value={formData.secret}
                   onChange={(e) => handleInputChange('secret', e.target.value)}
-                  placeholder="Enter TOTP secret"
+                  placeholder="For 2FA authentication codes"
+                  fontSize="md"
+                  h={10}
+                  borderRadius="md"
+                  borderColor={COLORS.border}
+                  _hover={{ borderColor: COLORS.secondary }}
+                  _focus={{
+                    borderColor: COLORS.link,
+                    boxShadow: `0 0 0 1px ${COLORS.link}`,
+                  }}
+                  _placeholder={{
+                    color: COLORS.secondary,
+                    fontSize: 'sm',
+                  }}
                 />
               </FormControl>
 
+              {/* Password Length Field */}
               <FormControl>
-                <FormLabel fontSize="sm">Password Length</FormLabel>
+                <FormLabel
+                  fontSize="sm"
+                  fontWeight="medium"
+                  color={COLORS.primary}
+                  mb={1.5}
+                  letterSpacing="0.01em"
+                >
+                  Generated Password Length
+                </FormLabel>
                 <Input
                   type="number"
                   value={formData.passwordLength}
@@ -191,51 +242,31 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
                       parseInt(e.target.value) || 16,
                     )
                   }
-                  placeholder="Password length"
+                  placeholder="16"
+                  fontSize="md"
+                  h={10}
+                  borderRadius="md"
+                  borderColor={COLORS.border}
+                  _hover={{ borderColor: COLORS.secondary }}
+                  _focus={{
+                    borderColor: COLORS.link,
+                    boxShadow: `0 0 0 1px ${COLORS.link}`,
+                  }}
+                  _placeholder={{
+                    color: COLORS.secondary,
+                    fontSize: 'sm',
+                  }}
                   min="8"
                   max="64"
                 />
+                <Text fontSize="xs" color={COLORS.secondary} mt={0.5}>
+                  Recommended: 16-32 characters
+                </Text>
               </FormControl>
             </VStack>
           </CardBody>
         </Card>
-
-        {/* Action Buttons */}
-        <HStack spacing={3} w="full" maxW="md">
-          <Button variant="outline" flex={1} onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button
-            colorScheme="blue"
-            flex={1}
-            leftIcon={<FiSave />}
-            onClick={handleSave}
-          >
-            {isNewEntry ? 'Create Entry' : 'Save Changes'}
-          </Button>
-        </HStack>
       </VStack>
-
-      {/* Delete Confirmation Modal */}
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Delete Secret</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            Are you sure you want to delete this secret? This action cannot be
-            undone.
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
-              Cancel
-            </Button>
-            <Button colorScheme="red" onClick={confirmDelete}>
-              Delete
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </>
   );
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Icon, Button, HStack } from '@chakra-ui/react';
 import { LockIcon, AddIcon, ChevronLeftIcon } from '@chakra-ui/icons';
+import { FiSave } from 'react-icons/fi';
 import { COLORS } from '../constants/colors';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({
@@ -130,7 +131,86 @@ export const AppHeader: React.FC<{
   );
 };
 
-export const AppFooter: React.FC<{ version: string }> = ({ version }) => {
+export const AppFooter: React.FC<{
+  version: string;
+  // Action footer props
+  showActions?: boolean;
+  onSave?: () => void;
+  onCancel?: () => void;
+  onDelete?: () => void;
+  saveLabel?: string;
+  isNewEntry?: boolean;
+}> = ({
+  version,
+  showActions = false,
+  onSave,
+  onCancel,
+  onDelete,
+  saveLabel = 'Save Changes',
+  isNewEntry = false,
+}) => {
+  // Show action buttons when editing/creating entries
+  if (showActions) {
+    return (
+      <Box
+        style={{
+          height: 56,
+          background: COLORS.white,
+          borderTop: `1px solid ${COLORS.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 16px',
+          boxShadow: `0 -1px 2px ${COLORS.shadowLight}`,
+        }}
+      >
+        <HStack spacing={2}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCancel}
+            style={{
+              fontSize: 12,
+              padding: '8px 16px',
+              color: COLORS.secondary,
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            colorScheme="blue"
+            size="sm"
+            onClick={onSave}
+            leftIcon={<FiSave />}
+            style={{
+              fontSize: 12,
+              padding: '8px 16px',
+            }}
+          >
+            {saveLabel}
+          </Button>
+        </HStack>
+
+        {/* Delete button for existing entries */}
+        {!isNewEntry && onDelete && (
+          <Button
+            variant="ghost"
+            size="sm"
+            colorScheme="red"
+            onClick={onDelete}
+            style={{
+              fontSize: 12,
+              padding: '8px 12px',
+            }}
+          >
+            Delete
+          </Button>
+        )}
+      </Box>
+    );
+  }
+
+  // Default footer with version info
   return (
     <Box
       style={{

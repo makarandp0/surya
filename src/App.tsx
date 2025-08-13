@@ -1,6 +1,21 @@
 /* eslint-disable no-console */
 import React, { useState, useEffect } from 'react';
-import { Box, Text, VStack, Spinner, Alert, AlertIcon } from '@chakra-ui/react';
+import {
+  Box,
+  Text,
+  VStack,
+  Spinner,
+  Alert,
+  AlertIcon,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Button,
+} from '@chakra-ui/react';
 import pkg from '../package.json';
 import { LoginSection } from './components/LoginSection';
 import { UnifiedSection } from './components/UnifiedSection';
@@ -24,6 +39,30 @@ export const App = () => {
     'main',
   );
   const [editingSecretIndex, setEditingSecretIndex] = useState<number>(-1);
+
+  // Edit form state for footer actions
+  const [currentEditData, setCurrentEditData] = useState<SecretEntry | null>(
+    null,
+  );
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Footer action handlers for edit mode
+  const handleFooterSave = () => {
+    if (currentEditData) {
+      handleSaveCredential(editingSecretIndex, currentEditData);
+    }
+  };
+
+  const handleFooterDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmFooterDelete = () => {
+    if (editingSecretIndex !== -1) {
+      handleDeleteCredential(editingSecretIndex);
+    }
+    setShowDeleteModal(false);
+  };
 
   // Initialize app and check for existing session
   useEffect(() => {
@@ -214,6 +253,7 @@ export const App = () => {
           onDelete={handleDeleteCredential}
           onCancel={handleBackToMain}
           isNewEntry={currentView === 'new'}
+          onFormDataChange={setCurrentEditData}
         />
       );
     }
@@ -279,7 +319,40 @@ export const App = () => {
           {renderCurrentView()}
         </Box>
       </Box>
-      <AppFooter version={pkg.version} />
+      <AppFooter
+        version={pkg.version}
+        showActions={currentView === 'edit' || currentView === 'new'}
+        onSave={currentEditData ? handleFooterSave : undefined}
+        onCancel={handleBackToMain}
+        onDelete={currentView === 'edit' ? handleFooterDelete : undefined}
+        saveLabel={currentView === 'new' ? 'Create Entry' : 'Save Changes'}
+        isNewEntry={currentView === 'new'}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Delete Secret</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            Are you sure you want to delete this secret? This action cannot be
+            undone.
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="ghost"
+              mr={3}
+              onClick={() => setShowDeleteModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button colorScheme="red" onClick={confirmFooterDelete}>
+              Delete
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </AppLayout>
   );
 };
