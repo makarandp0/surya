@@ -19,6 +19,9 @@ interface VaultSearchProps {
   totalCount?: number;
 }
 
+// Tracks whether we've already attempted the one-time domain prefill across the app lifecycle.
+let hasPrefetchedDomain = false;
+
 export const VaultSearch: React.FC<VaultSearchProps> = ({
   query,
   onQueryChange,
@@ -61,27 +64,38 @@ export const VaultSearch: React.FC<VaultSearchProps> = ({
     }
   };
 
-  // Optional: try to prefill once on mount if query is empty
+  // One-time (global) attempt to prefill with active tab domain on the very first mount only.
+  // We intentionally run this effect only once and suppress exhaustive-deps because we
+  // want the initial query/onQueryChange values captured at first mount; subsequent mounts
+  // (even if the component unmounts/remounts) should NOT trigger another fetch.
   useEffect(() => {
+    if (hasPrefetchedDomain) {
+      return; // already attempted
+    }
+    hasPrefetchedDomain = true;
     let cancelled = false;
     (async () => {
       if (query.trim()) {
-        return;
+        return; // user already has a query; do not override
       }
-      const domain = await fetchActiveTabDomain();
-      if (cancelled) {
-        return;
-      }
-      if (domain) {
-        setInputValue(domain);
-        onQueryChange(domain);
+      try {
+        const domain = await fetchActiveTabDomain();
+        if (cancelled) {
+          return;
+        }
+        if (domain) {
+          setInputValue(domain);
+          onQueryChange(domain);
+        }
+      } catch {
+        // ignore errors
       }
     })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instanceId]);
+  }, []);
 
   // (No logging)
 

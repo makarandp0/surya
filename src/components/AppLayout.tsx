@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Icon, Button, HStack } from '@chakra-ui/react';
 import { LockIcon, AddIcon, ChevronLeftIcon } from '@chakra-ui/icons';
-import { FiSave } from 'react-icons/fi';
+import { FiSave, FiDownload } from 'react-icons/fi';
 import { COLORS } from '../constants/colors';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({
@@ -140,6 +140,10 @@ export const AppFooter: React.FC<{
   onDelete?: () => void;
   saveLabel?: string;
   isNewEntry?: boolean;
+  // Save to file props
+  hasUnsavedChanges?: boolean;
+  onSaveToFile?: () => void;
+  isSaving?: boolean;
 }> = ({
   version,
   showActions = false,
@@ -148,6 +152,9 @@ export const AppFooter: React.FC<{
   onDelete,
   saveLabel = 'Save Changes',
   isNewEntry = false,
+  hasUnsavedChanges = false,
+  onSaveToFile,
+  isSaving = false,
 }) => {
   // Show action buttons when editing/creating entries
   if (showActions) {
@@ -210,21 +217,42 @@ export const AppFooter: React.FC<{
     );
   }
 
-  // Default footer with version info
+  // Default footer with version info and optional save button
   return (
     <Box
       style={{
-        height: 40,
+        height: hasUnsavedChanges ? 56 : 40,
         background: COLORS.white,
         borderTop: `1px solid ${COLORS.border}`,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: hasUnsavedChanges ? 'space-between' : 'center',
         fontSize: 12,
         color: COLORS.secondary,
+        padding: hasUnsavedChanges ? '0 16px' : '0',
       }}
     >
-      v{version} &nbsp;|&nbsp; <span style={{ color: COLORS.link }}>Help</span>
+      <Box style={{ display: 'flex', alignItems: 'center' }}>
+        v{version} &nbsp;|&nbsp;{' '}
+        <span style={{ color: COLORS.link }}>Help</span>
+      </Box>
+
+      {hasUnsavedChanges && onSaveToFile && (
+        <Button
+          colorScheme="blue"
+          size="sm"
+          onClick={onSaveToFile}
+          leftIcon={<FiDownload />}
+          isLoading={isSaving}
+          loadingText="Saving..."
+          style={{
+            fontSize: 12,
+            padding: '8px 16px',
+          }}
+        >
+          Save File
+        </Button>
+      )}
     </Box>
   );
 };

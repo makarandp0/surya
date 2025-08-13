@@ -18,7 +18,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
     isGenerating,
     filteredCount,
     totalCount,
-  } = useVaultSearch(masterPassword, secrets);
+  } = useVaultSearch(secrets);
 
   return (
     <VStack spacing={2} w="full" pt={3}>

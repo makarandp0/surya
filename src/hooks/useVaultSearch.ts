@@ -3,10 +3,7 @@ import { useDebounce } from './useDebounce';
 import { useMultiFieldSearch } from './useMultiFieldSearch';
 import { SecretEntry } from '../crypto';
 
-export const useVaultSearch = (
-  masterPassword: string,
-  secrets: SecretEntry[],
-) => {
+export const useVaultSearch = (secrets: SecretEntry[]) => {
   const [query, setQuery] = useState('');
 
   // Debounce the query to avoid too frequent searches
