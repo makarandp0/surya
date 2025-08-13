@@ -7,7 +7,7 @@ export const isChromeExtensionEnv = (): boolean => {
 
 export const fetchActiveTabDomain = async (): Promise<string> => {
   if (!isChromeExtensionEnv()) {
-    return 'fake.com';
+    return 'google.com';
   }
   return new Promise((resolve) => {
     try {

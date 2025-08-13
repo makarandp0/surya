@@ -1,18 +1,10 @@
 /* eslint-disable no-console */
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Text,
-  VStack,
-  Icon,
-  Spinner,
-  Alert,
-  AlertIcon,
-} from '@chakra-ui/react';
-import { LockIcon } from '@chakra-ui/icons';
+import { Box, Text, VStack, Spinner, Alert, AlertIcon } from '@chakra-ui/react';
 import pkg from '../package.json';
 import { LoginSection } from './components/LoginSection';
 import { UnifiedSection } from './components/UnifiedSection';
+import { AppLayout, AppHeader, AppFooter } from './components/AppLayout';
 import { SecretEntry, decryptSecretsFile } from './crypto';
 import { storageService } from './services/storage';
 
@@ -116,6 +108,11 @@ export const App = () => {
     }
   };
 
+  const handleAddNew = () => {
+    // TODO: Implement add new credential functionality
+    console.log('Add new credential clicked');
+  };
+
   const handleSessionRestore = async (
     password: string,
   ): Promise<SecretEntry[] | null> => {
@@ -141,37 +138,8 @@ export const App = () => {
 
   if (isInitializing) {
     return (
-      <Box
-        style={{
-          width: 360,
-          height: 600,
-          background: '#f9f9f9',
-          borderRadius: 8,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          overflow: 'hidden',
-          margin: '0 auto',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Header */}
-        <Box
-          style={{
-            height: 56,
-            background: '#fff',
-            borderBottom: '1px solid #e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 600,
-            fontSize: 18,
-            letterSpacing: 1,
-            color: '#2d3748',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-          }}
-        >
-          <Icon as={LockIcon} color="brand.500" boxSize={5} mr={2} /> ChromePass
-        </Box>
+      <AppLayout>
+        <AppHeader />
         {/* Main loading content */}
         <Box
           style={{
@@ -190,60 +158,17 @@ export const App = () => {
             </Text>
           </VStack>
         </Box>
-        {/* Footer */}
-        <Box
-          style={{
-            height: 40,
-            background: '#fff',
-            borderTop: '1px solid #e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 12,
-            color: '#a0aec0',
-          }}
-        >
-          v{pkg.version} &nbsp;|&nbsp;{' '}
-          <Text as="span" color="#3182ce">
-            Help
-          </Text>
-        </Box>
-      </Box>
+        <AppFooter version={pkg.version} />
+      </AppLayout>
     );
   }
 
   return (
-    <Box
-      style={{
-        width: 360,
-        height: 600,
-        background: '#f9f9f9',
-        borderRadius: 8,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        overflow: 'hidden',
-        margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Header */}
-      <Box
-        style={{
-          height: 56,
-          background: '#fff',
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 600,
-          fontSize: 18,
-          letterSpacing: 1,
-          color: '#2d3748',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-        }}
-      >
-        <Icon as={LockIcon} color="brand.500" boxSize={5} mr={2} /> ChromePass
-      </Box>
+    <AppLayout>
+      <AppHeader
+        onLogout={isLoggedIn ? handleLogout : undefined}
+        onAddNew={isLoggedIn ? handleAddNew : undefined}
+      />
       {/* Main Content */}
       <Box
         style={{
@@ -287,24 +212,7 @@ export const App = () => {
           )}
         </Box>
       </Box>
-      {/* Footer */}
-      <Box
-        style={{
-          height: 40,
-          background: '#fff',
-          borderTop: '1px solid #e5e7eb',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 12,
-          color: '#a0aec0',
-        }}
-      >
-        v{pkg.version} &nbsp;|&nbsp;{' '}
-        <Text as="span" color="#3182ce">
-          Help
-        </Text>
-      </Box>
-    </Box>
+      <AppFooter version={pkg.version} />
+    </AppLayout>
   );
 };

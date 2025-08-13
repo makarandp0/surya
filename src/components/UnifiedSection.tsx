@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  HStack,
-  Text,
-  VStack,
-  Alert,
-  AlertIcon,
-} from '@chakra-ui/react';
+import { Box, VStack, Alert, AlertIcon } from '@chakra-ui/react';
 import { UnifiedSectionProps } from '../types/credential';
 import { useVaultSearch } from '../hooks/useVaultSearch';
 import { useTotpTimer } from '../hooks/useTotpTimer';
@@ -18,7 +10,6 @@ import { TotpTimer } from './TotpTimer';
 export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
   masterPassword,
   secrets,
-  onLogout,
 }) => {
   const {
     query,
@@ -36,19 +27,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
   );
 
   return (
-    <VStack spacing={2} w="full">
-      {/* Header with logout */}
-      <HStack justify="space-between" w="full" mb={1}>
-        <Text fontSize="md" fontWeight="bold" color="gray.800">
-          🔓 Vault ({secrets.length})
-        </Text>
-        <HStack spacing={2}>
-          <Button size="xs" variant="outline" onClick={onLogout}>
-            Logout
-          </Button>
-        </HStack>
-      </HStack>
-
+    <VStack spacing={2} w="full" pt={3}>
       {/* Main Vault Search */}
       <VaultSearch
         query={query}
