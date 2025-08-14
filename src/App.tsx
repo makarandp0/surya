@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Text,
@@ -23,45 +23,66 @@ import { EditCredential } from './components/EditCredential';
 import { AppLayout, AppHeader, AppFooter } from './components/AppLayout';
 import { SecretEntry, decryptSecretsFile } from './crypto';
 import { storageService } from './services/storage';
+import { useAppContext, useAppActions } from './contexts/useAppContext';
 
 const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 export const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [masterPassword, setMasterPassword] = useState('');
-  const [secrets, setSecrets] = useState<SecretEntry[]>([]);
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [initError, setInitError] = useState<string | null>(null);
-  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
+  const { state, dispatch } = useAppContext();
+  const actions = useAppActions();
 
-  // Navigation state
-  const [currentView, setCurrentView] = useState<'main' | 'edit' | 'new'>(
-    'main',
-  );
-  const [editingSecretIndex, setEditingSecretIndex] = useState<number>(-1);
-
-  // Edit form state for footer actions
-  const [currentEditData, setCurrentEditData] = useState<SecretEntry | null>(
-    null,
-  );
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const {
+    isLoggedIn,
+    isInitializing,
+    initError,
+    autoLoginAttempted,
+    currentView,
+    currentEditData,
+    showDeleteModal,
+    isDirty,
+    secrets,
+  } = state;
 
   // Footer action handlers for edit mode
   const handleFooterSave = () => {
     if (currentEditData) {
-      handleSaveCredential(editingSecretIndex, currentEditData);
+      actions.saveCurrentEdit();
     }
   };
 
   const handleFooterDelete = () => {
-    setShowDeleteModal(true);
+    actions.setShowDeleteModal(true);
   };
 
   const confirmFooterDelete = () => {
-    if (editingSecretIndex !== -1) {
-      handleDeleteCredential(editingSecretIndex);
+    actions.deleteCurrentEdit();
+  };
+
+  const handleSaveToFile = async () => {
+    // TODO: Implement save to encrypted file logic
+    // This would encrypt the secrets with the master password and save to storage
+    try {
+      // For now, just reset the dirty state by updating originalSecrets
+      // save the file.
+      const fileContents = JSON.stringify({ v: 2, ts: Date.now(), d: secrets });
+      const blob = new Blob([fileContents], { type: 'application/text' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `surya-secrets-${
+        new Date().toISOString().replace(/:/g, '-').split('.')[0]
+      }.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      actions.setSecrets(secrets);
+      console.log('Secrets saved to file');
+    } catch (error) {
+      console.error('Failed to save secrets to file:', error);
+      // TODO: Show error toast/notification
     }
-    setShowDeleteModal(false);
   };
 
   // Initialize app and check for existing session
@@ -72,7 +93,7 @@ export const App = () => {
         if (session && session.encryptedSecretsFile) {
           // If user has remembered password, try auto-login
           if (session.rememberPassword && session.encryptedMasterPassword) {
-            setAutoLoginAttempted(true);
+            dispatch({ type: 'SET_AUTO_LOGIN_ATTEMPTED', payload: true });
             try {
               const storedPassword = await storageService.decryptStoredPassword(
                 session.encryptedMasterPassword,
@@ -83,38 +104,42 @@ export const App = () => {
               );
 
               // Auto-login successful
-              setMasterPassword(storedPassword);
-              setSecrets(decryptedFile.d);
-              setIsLoggedIn(true);
+              dispatch({
+                type: 'LOGIN',
+                payload: { password: storedPassword, secrets: decryptedFile.d },
+              });
 
               // Update last accessed
               await storageService.updateLastAccessed();
-              setInitError(null);
+              dispatch({ type: 'SET_INIT_ERROR', payload: null });
             } catch (error) {
               // Auto-login failed, clear corrupted session
-
               console.warn(
                 'Auto-login failed, clearing session:',
                 error instanceof Error ? error.message : 'Unknown error',
               );
               await storageService.clearSession();
-              setInitError(
-                'Your saved session has expired or become corrupted. Please log in again.',
-              );
+              dispatch({
+                type: 'SET_INIT_ERROR',
+                payload:
+                  'Your saved session has expired or become corrupted. Please log in again.',
+              });
             }
           }
         }
       } catch (error) {
-        setInitError(
-          error instanceof Error ? error.message : 'Failed to load session',
-        );
+        dispatch({
+          type: 'SET_INIT_ERROR',
+          payload:
+            error instanceof Error ? error.message : 'Failed to load session',
+        });
       } finally {
-        setIsInitializing(false);
+        dispatch({ type: 'SET_INITIALIZING', payload: false });
       }
     };
 
     initializeApp();
-  }, []);
+  }, [dispatch]);
 
   const handleLogin = async (
     password: string,
@@ -122,9 +147,7 @@ export const App = () => {
     encryptedData?: string,
     rememberPassword?: boolean,
   ) => {
-    setMasterPassword(password);
-    setSecrets(secretList);
-    setIsLoggedIn(true);
+    actions.login(password, secretList);
 
     // Save session data for persistence
     try {
@@ -140,9 +163,7 @@ export const App = () => {
   };
 
   const handleLogout = async () => {
-    setMasterPassword('');
-    setSecrets([]);
-    setIsLoggedIn(false);
+    actions.logout();
 
     // Clear stored session
     try {
@@ -153,42 +174,11 @@ export const App = () => {
   };
 
   const handleAddNew = () => {
-    setEditingSecretIndex(-1); // -1 indicates new entry
-    setCurrentView('new');
-  };
-
-  const handleEditSecret = (index: number) => {
-    setEditingSecretIndex(index);
-    setCurrentView('edit');
+    actions.startNew();
   };
 
   const handleBackToMain = () => {
-    setCurrentView('main');
-    setEditingSecretIndex(-1);
-  };
-
-  const handleSaveCredential = (index: number, updatedSecret: SecretEntry) => {
-    if (index === -1) {
-      // Adding new credential
-      setSecrets([...secrets, updatedSecret]);
-    } else {
-      // Update the secrets array with the modified secret
-      const newSecrets = [...secrets];
-      newSecrets[index] = updatedSecret;
-      setSecrets(newSecrets);
-    }
-
-    // Go back to main view
-    handleBackToMain();
-  };
-
-  const handleDeleteCredential = (index: number) => {
-    // Remove from secrets array
-    const newSecrets = secrets.filter((_, i) => i !== index);
-    setSecrets(newSecrets);
-
-    // Go back to main view
-    handleBackToMain();
+    actions.cancelEdit();
   };
 
   const handleSessionRestore = async (
@@ -243,17 +233,7 @@ export const App = () => {
 
   const renderCurrentView = () => {
     if ((currentView === 'edit' || currentView === 'new') && isLoggedIn) {
-      return (
-        <EditCredential
-          secrets={secrets}
-          secretIndex={editingSecretIndex}
-          onSave={handleSaveCredential}
-          onDelete={handleDeleteCredential}
-          onCancel={handleBackToMain}
-          isNewEntry={currentView === 'new'}
-          onFormDataChange={setCurrentEditData}
-        />
-      );
+      return <EditCredential />;
     }
 
     if (!isLoggedIn) {
@@ -266,14 +246,7 @@ export const App = () => {
       );
     }
 
-    return (
-      <UnifiedSection
-        masterPassword={masterPassword}
-        secrets={secrets}
-        onLogout={handleLogout}
-        onEditSecret={handleEditSecret}
-      />
-    );
+    return <UnifiedSection />;
   };
 
   return (
@@ -325,10 +298,15 @@ export const App = () => {
         onDelete={currentView === 'edit' ? handleFooterDelete : undefined}
         saveLabel={currentView === 'new' ? 'Create Entry' : 'Save Changes'}
         isNewEntry={currentView === 'new'}
+        hasUnsavedChanges={isDirty && currentView === 'main'}
+        onSaveToFile={handleSaveToFile}
       />
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => actions.setShowDeleteModal(false)}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Delete Secret</ModalHeader>
@@ -341,7 +319,7 @@ export const App = () => {
             <Button
               variant="ghost"
               mr={3}
-              onClick={() => setShowDeleteModal(false)}
+              onClick={() => actions.setShowDeleteModal(false)}
             >
               Cancel
             </Button>

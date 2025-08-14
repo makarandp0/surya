@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { App } from '../App';
+import { AppProvider } from '../contexts/AppContext';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
 
@@ -44,9 +45,11 @@ const renderApp = () => {
   const root = createRoot(container);
   act(() => {
     root.render(
-      <ChakraProvider>
-        <App />
-      </ChakraProvider>,
+      <AppProvider>
+        <ChakraProvider>
+          <App />
+        </ChakraProvider>
+      </AppProvider>,
     );
   });
   return { container, root };

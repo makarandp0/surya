@@ -9,10 +9,3 @@ export interface CredentialCard {
   totpTimeRemaining?: number;
   originalIndex: number;
 }
-
-export interface UnifiedSectionProps {
-  masterPassword: string;
-  secrets: SecretEntry[];
-  onLogout: () => void;
-  onEditSecret: (index: number) => void;
-}

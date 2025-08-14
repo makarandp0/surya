@@ -12,27 +12,15 @@ import {
 } from '@chakra-ui/react';
 import { SecretEntry } from '../crypto';
 import { COLORS } from '../constants/colors';
+import { useAppContext, useAppActions } from '../contexts/useAppContext';
 
-interface EditCredentialProps {
-  secrets: SecretEntry[];
-  secretIndex: number;
-  onSave: (index: number, updatedSecret: SecretEntry) => void;
-  onDelete: (index: number) => void;
-  onCancel: () => void;
-  isNewEntry?: boolean;
-  onFormDataChange?: (formData: SecretEntry) => void;
-}
+export const EditCredential: React.FC = () => {
+  const { state, dispatch } = useAppContext();
+  const actions = useAppActions();
 
-export const EditCredential: React.FC<EditCredentialProps> = ({
-  secrets,
-  secretIndex,
-  onSave: _onSave,
-  onDelete: _onDelete,
-  onCancel,
-  isNewEntry = false,
-  onFormDataChange,
-}) => {
-  const secret = isNewEntry ? null : secrets[secretIndex];
+  const { secrets, editingSecretIndex, currentView } = state;
+  const isNewEntry = currentView === 'new';
+  const secret = isNewEntry ? null : secrets[editingSecretIndex];
 
   const [formData, setFormData] = useState({
     name: secret?.name || '',
@@ -43,7 +31,7 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
     includeSymbols: secret?.includeSymbols || false,
   });
 
-  // Pass current form data to parent for footer actions
+  // Pass current form data to context for footer actions
   useEffect(() => {
     const currentFormAsSecret: SecretEntry = {
       ...(secret || {}),
@@ -54,14 +42,14 @@ export const EditCredential: React.FC<EditCredentialProps> = ({
       passwordLength: formData.passwordLength,
       includeSymbols: formData.includeSymbols,
     };
-    onFormDataChange?.(currentFormAsSecret);
-  }, [formData, secret, onFormDataChange]);
+    dispatch({ type: 'SET_CURRENT_EDIT_DATA', payload: currentFormAsSecret });
+  }, [formData, secret, dispatch]);
 
-  if (!isNewEntry && (secretIndex === -1 || !secret)) {
+  if (!isNewEntry && (editingSecretIndex === -1 || !secret)) {
     return (
       <Box p={4}>
         <Text color="red.500">Secret not found</Text>
-        <Button onClick={onCancel} mt={4}>
+        <Button onClick={actions.cancelEdit} mt={4}>
           Go Back
         </Button>
       </Box>

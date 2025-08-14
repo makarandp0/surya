@@ -1,15 +1,15 @@
 import React from 'react';
 import { Box, VStack, Alert, AlertIcon } from '@chakra-ui/react';
-import { UnifiedSectionProps } from '../types/credential';
 import { useVaultSearch } from '../hooks/useVaultSearch';
 import { FlipCredentialCard } from './FlipCredentialCard';
 import { VaultSearch } from './VaultSearch';
+import { useAppContext, useAppActions } from '../contexts/useAppContext';
 
-export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
-  masterPassword,
-  secrets,
-  onEditSecret,
-}) => {
+export const UnifiedSection: React.FC = () => {
+  const { state } = useAppContext();
+  const actions = useAppActions();
+
+  const { masterPassword, secrets } = state;
   const {
     query,
     setQuery,
@@ -40,7 +40,7 @@ export const UnifiedSection: React.FC<UnifiedSectionProps> = ({
               secretEntry={secret}
               originalIndex={matchedIndices[index]}
               masterPassword={masterPassword}
-              onEdit={onEditSecret}
+              onEdit={actions.startEdit}
             />
           ))}
         </VStack>
