@@ -27,7 +27,6 @@ export const OpenAICredentialCardWrapper: React.FC<
   compact = false,
 }) => {
   const [totpCode, setTotpCode] = useState<string | undefined>();
-  const [totpExpiresAt, setTotpExpiresAt] = useState<number | undefined>();
   const [remainingSeconds, setRemaining] = useState<number | undefined>();
 
   const generatePassword = useCallback(async (): Promise<string> => {
@@ -56,7 +55,6 @@ export const OpenAICredentialCardWrapper: React.FC<
   const updateTOTP = useCallback(async () => {
     if (!secretEntry.secret) {
       setTotpCode(undefined);
-      setTotpExpiresAt(undefined);
       return;
     }
 
@@ -69,13 +67,11 @@ export const OpenAICredentialCardWrapper: React.FC<
       // Calculate expiration time
       const now = Math.floor(Date.now() / 1000);
       const timeRemainingSeconds = 30 - (now % 30);
-      setTotpExpiresAt(Date.now() + timeRemainingSeconds * 1000);
       setRemaining(timeRemainingSeconds);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('Failed to generate TOTP:', error);
       setTotpCode(undefined);
-      setTotpExpiresAt(undefined);
     }
   }, [secretEntry.secret]);
 
@@ -102,7 +98,6 @@ export const OpenAICredentialCardWrapper: React.FC<
     lastUpdatedAt: undefined, // SecretEntry doesn't have lastUpdated field yet
     onRequestPassword: generatePassword,
     totpCode,
-    totpExpiresAtMs: totpExpiresAt,
     totpExpiresAfterSeconds: remainingSeconds,
     totpPeriodSec: 30,
     onOpenSite:

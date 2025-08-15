@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   ChakraProvider,
   extendTheme,
@@ -54,14 +54,6 @@ const getFaviconUrl = (website?: string) => {
   return domain
     ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
     : undefined;
-};
-
-const useTotpRemaining = (totpExpiresAtMs?: number) => {
-  if (!totpExpiresAtMs) {
-    return undefined;
-  }
-  const diffMs = totpExpiresAtMs - Date.now();
-  return Math.max(0, Math.ceil(diffMs / 1000));
 };
 
 /*********************** Subcomponents ************************/
@@ -214,7 +206,6 @@ export type OpenAICredCardProps = {
   initiallyRevealed?: boolean;
   onRequestPassword?: () => Promise<string> | string;
   totpCode?: string;
-  totpExpiresAtMs?: number;
   totpPeriodSec?: number;
   totpExpiresAfterSeconds?: number;
   onOpenSite?: (urlOrDomain: string) => void;
@@ -235,7 +226,6 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
     initiallyRevealed,
     onRequestPassword,
     totpCode,
-    totpExpiresAtMs,
     totpExpiresAfterSeconds,
     totpPeriodSec,
     onOpenSite,
@@ -322,7 +312,6 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
 
           <TotpBlock
             totpCode={totpCode}
-            totpExpiresAtMs={totpExpiresAtMs}
             totpPeriodSec={totpPeriodSec}
             totpExpiresAfterSeconds={totpExpiresAfterSeconds}
           />
@@ -455,7 +444,7 @@ const CredentialGalleryInner: React.FC = () => {
                 tags={['infra', 'prod']}
                 password="••••••••"
                 totpCode="493201"
-                totpExpiresAtMs={Date.now() + 20_000}
+                totpExpiresAfterSeconds={20}
               />
             </Box>
             <Box bg="gray.900" p={3} borderRadius="2xl">
@@ -476,7 +465,7 @@ const CredentialGalleryInner: React.FC = () => {
                 username="team@surya.dev"
                 tags={['comms']}
                 totpCode="220911"
-                totpExpiresAtMs={Date.now() + 15_000}
+                totpExpiresAfterSeconds={15}
               />
             </Box>
           </SimpleGrid>
