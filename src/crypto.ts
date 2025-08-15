@@ -220,6 +220,9 @@ export interface SecretEntry {
   includeSymbols?: boolean;
   website?: string;
   username?: string;
+
+  // add
+  // salt:string.
 }
 
 interface SecretsFile {

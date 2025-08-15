@@ -81,6 +81,41 @@ const TitleLine: React.FC<{ website?: string; name?: string }> = ({
   );
 };
 
+const UserField: React.FC<{
+  username: string;
+}> = ({ username }) => {
+  const { onCopy, hasCopied } = useClipboard(username);
+  const handleCopy = async () => {
+    onCopy();
+  };
+
+  const subtleFg = useColorModeValue('gray.600', 'gray.400');
+
+  return (
+    <HStack w="full" spacing={2}>
+      <Box as={FiUser} boxSize={4} color={subtleFg} />
+      <Code
+        noOfLines={1}
+        minW={0}
+        flex={1}
+        overflow="hidden"
+        textOverflow="ellipsis"
+        title={username}
+      >
+        {username}
+      </Code>
+
+      <IconButton
+        aria-label="Copy userName"
+        icon={hasCopied ? <CheckIcon /> : <CopyIcon />}
+        size="sm"
+        variant="ghost"
+        onClick={handleCopy}
+      />
+    </HStack>
+  );
+};
+
 const PasswordField: React.FC<{
   passwordProp?: string;
   initiallyRevealed?: boolean;
@@ -222,8 +257,6 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
     onEdit,
   } = props;
 
-  const subtleFg = useColorModeValue('gray.600', 'gray.400');
-
   return (
     <Card
       variant="outline"
@@ -258,23 +291,7 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
           </HStack>
         </HStack>
 
-        <HStack mt={2} spacing={3} flexWrap="wrap" minW={0} w="full">
-          {username && (
-            <HStack spacing={2} minW={0} flex={1}>
-              <Box as={FiUser} boxSize={4} color={subtleFg} />
-              <Code
-                noOfLines={1}
-                minW={0}
-                flex={1}
-                overflow="hidden"
-                textOverflow="ellipsis"
-                title={username}
-              >
-                {username}
-              </Code>
-            </HStack>
-          )}
-        </HStack>
+        {username && <UserField username={username} />}
       </CardHeader>
 
       {(password || totpCode) && <Divider />}
@@ -297,7 +314,7 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
             <HStack color="gray.500">
               <LockIcon boxSize="14px" />
               <Text fontSize="sm">
-                No secrets stored. Generate on demand or add 2FA.
+                No secrets stored! Generate on demand or add 2FA.
               </Text>
             </HStack>
           )}
