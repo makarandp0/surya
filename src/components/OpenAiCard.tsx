@@ -67,23 +67,18 @@ const TitleLine: React.FC<{ website?: string; name?: string }> = ({
   return (
     <HStack spacing={3} align="center" minW={0} flex={1}>
       <Avatar size="sm" src={favicon} name={domain || 'site'} flexShrink={0} />
-      <Text fontWeight="semibold" noOfLines={1} title={label} minW={0} flex={1}>
+      <Badge
+        colorScheme="gray"
+        variant="subtle"
+        noOfLines={1}
+        maxW="180px"
+        overflow="hidden"
+        textOverflow="ellipsis"
+        title={domain}
+        flexShrink={0}
+      >
         {label}
-      </Text>
-      {domain && (
-        <Badge
-          colorScheme="gray"
-          variant="subtle"
-          noOfLines={1}
-          maxW="100px"
-          overflow="hidden"
-          textOverflow="ellipsis"
-          title={domain}
-          flexShrink={0}
-        >
-          {domain}
-        </Badge>
-      )}
+      </Badge>
     </HStack>
   );
 };
