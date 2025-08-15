@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 import { App } from './App';
 import { AppProvider } from './contexts/AppContext';
+import { RenderingPreferencesProvider } from './contexts/RenderingPreferencesContext';
 import { isChromeExtensionEnv } from './utils/browser';
 
 const theme = extendTheme({
@@ -116,9 +117,11 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <AppProvider>
-      <ChakraProvider theme={theme}>
-        <App />
-      </ChakraProvider>
+      <RenderingPreferencesProvider>
+        <ChakraProvider theme={theme}>
+          <App />
+        </ChakraProvider>
+      </RenderingPreferencesProvider>
     </AppProvider>
   </React.StrictMode>,
 );

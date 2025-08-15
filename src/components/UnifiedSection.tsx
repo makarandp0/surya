@@ -1,13 +1,23 @@
 import React from 'react';
-import { Box, VStack, Alert, AlertIcon } from '@chakra-ui/react';
+import {
+  Box,
+  VStack,
+  Alert,
+  AlertIcon,
+  HStack,
+  Spacer,
+} from '@chakra-ui/react';
 import { useVaultSearch } from '../hooks/useVaultSearch';
-import { FlipCredentialCard } from './FlipCredentialCard';
+import { CredentialCardRenderer } from './CredentialCardRenderer';
+import { CardRenderingToggle } from './CardRenderingToggle';
 import { VaultSearch } from './VaultSearch';
 import { useAppContext, useAppActions } from '../contexts/useAppContext';
+import { useRenderingPreferences } from '../hooks/useRenderingPreferences';
 
 export const UnifiedSection: React.FC = () => {
   const { state } = useAppContext();
   const actions = useAppActions();
+  const { cardRenderingMode } = useRenderingPreferences();
 
   const { masterPassword, secrets } = state;
   const {
@@ -23,24 +33,34 @@ export const UnifiedSection: React.FC = () => {
   return (
     <VStack spacing={2} w="full" pt={3}>
       {/* Main Vault Search */}
-      <VaultSearch
-        query={query}
-        onQueryChange={setQuery}
-        isGenerating={isGenerating}
-        filteredCount={filteredCount}
-        totalCount={totalCount}
-      />
+      <VStack spacing={2} w="full">
+        <VaultSearch
+          query={query}
+          onQueryChange={setQuery}
+          isGenerating={isGenerating}
+          filteredCount={filteredCount}
+          totalCount={totalCount}
+        />
+
+        {/* Card Rendering Mode Toggle */}
+        <HStack w="full">
+          <Spacer />
+          <CardRenderingToggle />
+        </HStack>
+      </VStack>
 
       {/* Generated Credential Cards */}
       {filteredSecrets.length > 0 && (
         <VStack spacing={2} w="full">
           {filteredSecrets.map((secret, index) => (
-            <FlipCredentialCard
+            <CredentialCardRenderer
               key={`${secret.name}-${index}`}
               secretEntry={secret}
               originalIndex={matchedIndices[index]}
               masterPassword={masterPassword}
               onEdit={actions.startEdit}
+              renderingMode={cardRenderingMode}
+              compact={cardRenderingMode === 'openai'}
             />
           ))}
         </VStack>

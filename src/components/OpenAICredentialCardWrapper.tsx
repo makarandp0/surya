@@ -1,0 +1,119 @@
+import React, { useCallback, useState, useEffect } from 'react';
+import {
+  SecretEntry,
+  derivePassword,
+  generateTOTP,
+  normalizeDomainFromUrl,
+} from '../crypto';
+import { OpenAICredentialCard, type OpenAICredCardProps } from './OpenAiCard';
+
+interface OpenAICredentialCardWrapperProps {
+  secretEntry: SecretEntry;
+  originalIndex: number;
+  masterPassword: string;
+  onEdit: (index: number) => void;
+  onOpenSite?: (urlOrDomain: string) => void;
+  compact?: boolean;
+}
+
+export const OpenAICredentialCardWrapper: React.FC<
+  OpenAICredentialCardWrapperProps
+> = ({
+  secretEntry,
+  originalIndex,
+  masterPassword,
+  onEdit,
+  onOpenSite,
+  compact = false,
+}) => {
+  const [totpCode, setTotpCode] = useState<string | undefined>();
+  const [totpExpiresAt, setTotpExpiresAt] = useState<number | undefined>();
+  const [remainingSeconds, setRemaining] = useState<number | undefined>();
+
+  const generatePassword = useCallback(async (): Promise<string> => {
+    if (!masterPassword) {
+      throw new Error('Master password is required');
+    }
+
+    // Determine the domain to use for password generation
+    let targetDomain = '';
+    if (secretEntry.website) {
+      targetDomain = normalizeDomainFromUrl(secretEntry.website);
+    }
+
+    // Generate password deterministically
+    const password = await derivePassword({
+      masterKey: masterPassword,
+      domain: targetDomain,
+      username: secretEntry.username || '',
+      length: secretEntry.passwordLength || 16,
+      includeSymbols: secretEntry.includeSymbols || false,
+    });
+
+    return password;
+  }, [masterPassword, secretEntry]);
+
+  const updateTOTP = useCallback(async () => {
+    if (!secretEntry.secret) {
+      setTotpCode(undefined);
+      setTotpExpiresAt(undefined);
+      return;
+    }
+
+    try {
+      const totpResult = await generateTOTP({
+        secret: secretEntry.secret,
+      });
+      setTotpCode(totpResult.code);
+
+      // Calculate expiration time
+      const now = Math.floor(Date.now() / 1000);
+      const timeRemainingSeconds = 30 - (now % 30);
+      setTotpExpiresAt(Date.now() + timeRemainingSeconds * 1000);
+      setRemaining(timeRemainingSeconds);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to generate TOTP:', error);
+      setTotpCode(undefined);
+      setTotpExpiresAt(undefined);
+    }
+  }, [secretEntry.secret]);
+
+  // Generate TOTP on mount and set up refresh interval
+  useEffect(() => {
+    if (secretEntry.secret) {
+      updateTOTP();
+
+      // Set up interval to refresh TOTP
+      const interval = setInterval(() => {
+        updateTOTP();
+      }, 1000); // Update every second to handle expiration
+
+      return () => clearInterval(interval);
+    }
+  }, [secretEntry.secret, updateTOTP]);
+
+  const openAIProps: OpenAICredCardProps = {
+    id: originalIndex.toString(),
+    website: secretEntry.website,
+    username: secretEntry.username,
+    name: secretEntry.name,
+    tags: undefined, // SecretEntry doesn't have tags field yet
+    lastUpdatedAt: undefined, // SecretEntry doesn't have lastUpdated field yet
+    onRequestPassword: generatePassword,
+    totpCode,
+    totpExpiresAtMs: totpExpiresAt,
+    totpExpiresAfterSeconds: remainingSeconds,
+    totpPeriodSec: 30,
+    onOpenSite:
+      onOpenSite ||
+      ((url) => {
+        const finalUrl = url.startsWith('http') ? url : `https://${url}`;
+        window.open(finalUrl, '_blank');
+      }),
+    onEdit: (id) => onEdit(parseInt(id, 10)),
+    compact,
+  };
+
+  return <OpenAICredentialCard {...openAIProps} />;
+};

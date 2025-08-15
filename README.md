@@ -153,3 +153,29 @@ Structure
 - src/crypto.ts — Derivation helpers (PBKDF2 + TOTP)
 - src/App.tsx — Popup UI (React + Chakra)
 - src/main.tsx — App bootstrap
+
+### converting From google Authenticator
+
+- export the code from google authenticator
+- google authenticator will generate a QR Code for exported codes.
+- Use any QR code reader to get text from QR code
+- the imported text will look like
+
+```
+otpauth-migration://offline?data=CksKCqU66poRb8uw3HcSFm1ha2FyYW5kQGZpbmxleWNtcy5jb20aCkludHJhbGlua3MgASgBMAJCE2RiODZkZjE3NTA4NTY2NDk3MzUQAhgCIAE%3D
+```
+
+- save it in file lets say `small.txt`
+- clone the repo at https://github.com/scito/extract_otp_secrets
+- follow instructions to set it up.
+- run `python3 src/extract_otp_secrets.py small.txt`
+- it will produce something like:
+
+```
+Name:    makarand@gmail.com
+Secret:  UU5OVGQRN7F3BXDX
+Issuer:  SomeIssure
+Type:    totp
+```
+
+In the output `UU5OVGQRN7F3BXDX` is the secret you want!

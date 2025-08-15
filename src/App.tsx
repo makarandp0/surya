@@ -24,6 +24,7 @@ import { AppLayout, AppHeader, AppFooter } from './components/AppLayout';
 import { SecretEntry, decryptSecretsFile } from './crypto';
 import { storageService } from './services/storage';
 import { useAppContext, useAppActions } from './contexts/useAppContext';
+import { CardRenderingDemo } from './components/CardRenderingDemo';
 
 const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -248,6 +249,39 @@ export const App = () => {
 
     return <UnifiedSection />;
   };
+
+  const useCardDemo = false;
+
+  if (useCardDemo) {
+    return (
+      <AppLayout>
+        <AppHeader currentView="main" isLoggedIn={false} />
+        {/* Main Content with Scrollable Container */}
+        <Box
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            className="hide-scrollbar"
+            style={{
+              flex: 1,
+              overflowY: 'scroll',
+              overflowX: 'hidden',
+              padding: '0 12px',
+            }}
+          >
+            <CardRenderingDemo />
+          </Box>
+        </Box>
+        <AppFooter version={pkg.version} />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
