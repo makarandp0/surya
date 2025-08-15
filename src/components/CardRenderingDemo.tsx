@@ -1,8 +1,6 @@
 import React from 'react';
 import { VStack, Box, Text } from '@chakra-ui/react';
 import { CredentialCardRenderer } from './CredentialCardRenderer';
-import { CardRenderingToggle } from './CardRenderingToggle';
-import { useRenderingPreferences } from '../hooks/useRenderingPreferences';
 import { SecretEntry } from '../crypto';
 
 // Sample test data
@@ -84,7 +82,6 @@ const sampleSecrets: SecretEntry[] = [
 ];
 
 export const CardRenderingDemo: React.FC = () => {
-  const { cardRenderingMode } = useRenderingPreferences();
   const masterPassword = 'demo-password'; // For demo purposes
 
   return (
@@ -94,19 +91,9 @@ export const CardRenderingDemo: React.FC = () => {
           <Text fontSize="xl" fontWeight="bold" textAlign="center">
             Credential Card Demo
           </Text>
-          <Text color="gray.600" textAlign="center" fontSize="sm">
-            Switch between flip cards and OpenAI-style cards to see the
-            different rendering modes.
-          </Text>
-          <CardRenderingToggle />
         </VStack>
 
         <VStack spacing={4} w="full">
-          <Text fontSize="md" fontWeight="semibold">
-            Sample Credentials (
-            {cardRenderingMode === 'flip' ? 'Flip' : 'OpenAI'} Style)
-          </Text>
-
           {sampleSecrets.map((secret, index) => (
             <CredentialCardRenderer
               key={`${secret.name}-${index}`}
@@ -117,8 +104,6 @@ export const CardRenderingDemo: React.FC = () => {
                 // eslint-disable-next-line no-console
                 console.log('Edit clicked for index:', idx);
               }}
-              renderingMode={cardRenderingMode}
-              compact={cardRenderingMode === 'openai'}
             />
           ))}
         </VStack>

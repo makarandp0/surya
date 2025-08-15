@@ -1,23 +1,13 @@
 import React from 'react';
-import {
-  Box,
-  VStack,
-  Alert,
-  AlertIcon,
-  HStack,
-  Spacer,
-} from '@chakra-ui/react';
+import { Box, VStack, Alert, AlertIcon } from '@chakra-ui/react';
 import { useVaultSearch } from '../hooks/useVaultSearch';
 import { CredentialCardRenderer } from './CredentialCardRenderer';
-import { CardRenderingToggle } from './CardRenderingToggle';
 import { VaultSearch } from './VaultSearch';
 import { useAppContext, useAppActions } from '../contexts/useAppContext';
-import { useRenderingPreferences } from '../hooks/useRenderingPreferences';
 
 export const UnifiedSection: React.FC = () => {
   const { state } = useAppContext();
   const actions = useAppActions();
-  const { cardRenderingMode } = useRenderingPreferences();
 
   const { masterPassword, secrets } = state;
   const {
@@ -41,12 +31,6 @@ export const UnifiedSection: React.FC = () => {
           filteredCount={filteredCount}
           totalCount={totalCount}
         />
-
-        {/* Card Rendering Mode Toggle */}
-        <HStack w="full">
-          <Spacer />
-          <CardRenderingToggle />
-        </HStack>
       </VStack>
 
       {/* Generated Credential Cards */}
@@ -59,8 +43,6 @@ export const UnifiedSection: React.FC = () => {
               originalIndex={matchedIndices[index]}
               masterPassword={masterPassword}
               onEdit={actions.startEdit}
-              renderingMode={cardRenderingMode}
-              compact={cardRenderingMode === 'openai'}
             />
           ))}
         </VStack>

@@ -81,31 +81,6 @@ const MyComponent = () => {
 };
 ```
 
-### With Toggle Control
-
-```tsx
-import { CardRenderingToggle } from './CardRenderingToggle';
-
-const MyComponent = () => (
-  <VStack>
-    <CardRenderingToggle />
-    {/* Your cards here */}
-  </VStack>
-);
-```
-
-### Provider Setup
-
-```tsx
-import { RenderingPreferencesProvider } from './contexts/RenderingPreferencesContext';
-
-const App = () => (
-  <RenderingPreferencesProvider defaultMode="flip">
-    <YourAppContent />
-  </RenderingPreferencesProvider>
-);
-```
-
 ## Integration Points
 
 ### 1. UnifiedSection Integration

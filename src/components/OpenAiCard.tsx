@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
 import {
-  ChakraProvider,
-  extendTheme,
   Card,
   CardHeader,
   CardBody,
@@ -18,10 +16,9 @@ import {
   CircularProgressLabel,
   Spacer,
   Divider,
-  Kbd,
-  SimpleGrid,
   Box,
   useClipboard,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import {
   CopyIcon,
@@ -33,6 +30,7 @@ import {
   LockIcon,
   TimeIcon,
 } from '@chakra-ui/icons';
+import { FiUser } from 'react-icons/fi';
 
 /*********************** Utilities ************************/
 const getDomain = (input?: string): string | undefined => {
@@ -195,7 +193,6 @@ export type OpenAICredCardProps = {
   website?: string;
   username?: string;
   name?: string;
-  tags?: string[];
   lastUpdatedAt?: Date;
   password?: string;
   initiallyRevealed?: boolean;
@@ -205,7 +202,6 @@ export type OpenAICredCardProps = {
   totpExpiresAfterSeconds?: number;
   onOpenSite?: (urlOrDomain: string) => void;
   onEdit?: (id: string) => void;
-  compact?: boolean;
 };
 
 /*********************** Card ************************/
@@ -215,7 +211,6 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
     website,
     username,
     name,
-    tags,
     lastUpdatedAt,
     password,
     initiallyRevealed,
@@ -225,10 +220,9 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
     totpPeriodSec,
     onOpenSite,
     onEdit,
-    compact,
   } = props;
 
-  const title = name || getDomain(website) || 'Credential';
+  const subtleFg = useColorModeValue('gray.600', 'gray.400');
 
   return (
     <Card
@@ -240,7 +234,7 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
       w="full"
       maxW="100%"
     >
-      <CardHeader py={compact ? 3 : 4}>
+      <CardHeader py={3}>
         <HStack align="start" spacing={3} w="full" minW={0}>
           <TitleLine website={website} name={name} />
           <Spacer />
@@ -267,9 +261,7 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
         <HStack mt={2} spacing={3} flexWrap="wrap" minW={0} w="full">
           {username && (
             <HStack spacing={2} minW={0} flex={1}>
-              <Text color="gray.500" flexShrink={0}>
-                User:
-              </Text>
+              <Box as={FiUser} boxSize={4} color={subtleFg} />
               <Code
                 noOfLines={1}
                 minW={0}
@@ -282,22 +274,12 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
               </Code>
             </HStack>
           )}
-          <Spacer />
-          {tags?.length ? (
-            <HStack spacing={1} flexWrap="wrap" flexShrink={0}>
-              {tags.map((t) => (
-                <Badge key={t} colorScheme="purple" variant="subtle">
-                  {t}
-                </Badge>
-              ))}
-            </HStack>
-          ) : null}
         </HStack>
       </CardHeader>
 
       {(password || totpCode) && <Divider />}
 
-      <CardBody py={compact ? 3 : 4}>
+      <CardBody py={3}>
         <VStack align="stretch" spacing={3}>
           <PasswordField
             passwordProp={password}
@@ -322,18 +304,8 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
         </VStack>
       </CardBody>
 
-      <CardFooter py={compact ? 2 : 3}>
+      <CardFooter py={2}>
         <HStack w="full" color="gray.500" fontSize="xs" minW={0}>
-          <Text
-            noOfLines={1}
-            title={title}
-            minW={0}
-            flex={1}
-            overflow="hidden"
-            textOverflow="ellipsis"
-          >
-            {title}
-          </Text>
           <Spacer />
           {lastUpdatedAt && (
             <HStack flexShrink={0} spacing={1}>
@@ -341,144 +313,8 @@ export const OpenAICredentialCard: React.FC<OpenAICredCardProps> = (props) => {
               <Text>updated {lastUpdatedAt.toLocaleDateString()}</Text>
             </HStack>
           )}
-          {totpPeriodSec && totpCode && (
-            <HStack flexShrink={0} spacing={1}>
-              <Text>·</Text>
-              <Text>
-                <Kbd>{totpPeriodSec}s</Kbd> TOTP
-              </Text>
-            </HStack>
-          )}
         </HStack>
       </CardFooter>
     </Card>
-  );
-};
-
-/*********************** Gallery ************************/
-const CredentialGalleryInner: React.FC = () => {
-  const items = [
-    {
-      id: '1',
-      website: 'https://github.com',
-      username: 'maka@example.com',
-      name: 'GitHub',
-      password: 'S3cr3t!…',
-      totpCode: '123456',
-      totpExpiresAtMs: Date.now() + 12_000,
-      tags: ['work', 'dev'],
-      lastUpdatedAt: new Date(),
-    },
-    {
-      id: '2',
-      website: 'gmail.com',
-      username: 'maka@example.com',
-      name: 'Gmail',
-      onRequestPassword: async () => {
-        // Replace with Surya deterministic generator
-        return 'generated-by-surya';
-      },
-      tags: ['personal'],
-      lastUpdatedAt: new Date(Date.now() - 86_400_000),
-    },
-    {
-      id: '3',
-      website: 'totp-only.app',
-      name: 'TOTP Only',
-      totpCode: '987654',
-      totpExpiresAtMs: Date.now() + 25_000,
-      totpPeriodSec: 30,
-    },
-    {
-      id: '4',
-      website: 'https://example.com',
-      name: 'Metadata-only',
-      username: 'me@example.com',
-      tags: ['misc'],
-    },
-  ];
-
-  return (
-    <Box p={6}>
-      <VStack align="stretch" spacing={6}>
-        <Box>
-          <Text fontSize="2xl" fontWeight="semibold">
-            Project Surya – Chakra v2 Credential Cards
-          </Text>
-          <Text color="gray.500" fontSize="sm">
-            Interactive mock: reveal/copy password, copy TOTP, open site, and
-            see the countdown.
-          </Text>
-        </Box>
-        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={4}>
-          {items.map((props) => (
-            <OpenAICredentialCard
-              key={props.id}
-              {...props}
-              compact
-              onOpenSite={(u) =>
-                window.open(u.startsWith('http') ? u : `https://${u}`, '_blank')
-              }
-              // eslint-disable-next-line no-console
-              onEdit={(id) => console.log('edit', id)}
-            />
-          ))}
-        </SimpleGrid>
-
-        <Box pt={4}>
-          <Text fontSize="lg" fontWeight="medium" mb={2}>
-            Dark Surface Variant (vault look)
-          </Text>
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
-            <Box bg="gray.900" p={3} borderRadius="2xl">
-              <OpenAICredentialCard
-                id="5"
-                website="cloudflare.com"
-                name="Cloudflare"
-                username="ops@surya.dev"
-                tags={['infra', 'prod']}
-                password="••••••••"
-                totpCode="493201"
-                totpExpiresAfterSeconds={20}
-              />
-            </Box>
-            <Box bg="gray.900" p={3} borderRadius="2xl">
-              <OpenAICredentialCard
-                id="6"
-                website="stripe.com"
-                name="Stripe"
-                username="billing@surya.dev"
-                tags={['billing']}
-                password="••••••••"
-              />
-            </Box>
-            <Box bg="gray.900" p={3} borderRadius="2xl">
-              <OpenAICredentialCard
-                id="7"
-                website="slack.com"
-                name="Slack"
-                username="team@surya.dev"
-                tags={['comms']}
-                totpCode="220911"
-                totpExpiresAfterSeconds={15}
-              />
-            </Box>
-          </SimpleGrid>
-        </Box>
-      </VStack>
-    </Box>
-  );
-};
-
-/*********************** App Wrapper ************************/
-const theme = extendTheme({
-  config: { initialColorMode: 'light', useSystemColorMode: false },
-});
-
-export const Temp = () => {
-  return (
-    <ChakraProvider theme={theme}>
-      <CredentialGalleryInner />
-    </ChakraProvider>
   );
 };

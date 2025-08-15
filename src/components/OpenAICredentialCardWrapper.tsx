@@ -13,19 +13,11 @@ interface OpenAICredentialCardWrapperProps {
   masterPassword: string;
   onEdit: (index: number) => void;
   onOpenSite?: (urlOrDomain: string) => void;
-  compact?: boolean;
 }
 
 export const OpenAICredentialCardWrapper: React.FC<
   OpenAICredentialCardWrapperProps
-> = ({
-  secretEntry,
-  originalIndex,
-  masterPassword,
-  onEdit,
-  onOpenSite,
-  compact = false,
-}) => {
+> = ({ secretEntry, originalIndex, masterPassword, onEdit, onOpenSite }) => {
   const [totpCode, setTotpCode] = useState<string | undefined>();
   const [remainingSeconds, setRemaining] = useState<number | undefined>();
 
@@ -94,8 +86,7 @@ export const OpenAICredentialCardWrapper: React.FC<
     website: secretEntry.website,
     username: secretEntry.username,
     name: secretEntry.name,
-    tags: undefined, // SecretEntry doesn't have tags field yet
-    lastUpdatedAt: undefined, // SecretEntry doesn't have lastUpdated field yet
+    lastUpdatedAt: new Date(),
     onRequestPassword: generatePassword,
     totpCode,
     totpExpiresAfterSeconds: remainingSeconds,
@@ -107,7 +98,6 @@ export const OpenAICredentialCardWrapper: React.FC<
         window.open(finalUrl, '_blank');
       }),
     onEdit: (id) => onEdit(parseInt(id, 10)),
-    compact,
   };
 
   return <OpenAICredentialCard {...openAIProps} />;
