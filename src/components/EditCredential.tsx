@@ -10,7 +10,7 @@ import {
   Card,
   CardBody,
 } from '@chakra-ui/react';
-import { SecretEntry } from '../crypto';
+import { generateDefaultSalt, SecretEntry } from '../crypto';
 import { COLORS } from '../constants/colors';
 import { useAppContext, useAppActions } from '../contexts/useAppContext';
 
@@ -29,6 +29,12 @@ export const EditCredential: React.FC = () => {
     secret: secret?.secret || '',
     passwordLength: secret?.passwordLength || 16,
     includeSymbols: secret?.includeSymbols || false,
+    salt:
+      secret?.salt ||
+      generateDefaultSalt({
+        website: secret?.website,
+        username: secret?.username,
+      }),
   });
 
   // Pass current form data to context for footer actions
@@ -41,7 +47,7 @@ export const EditCredential: React.FC = () => {
       secret: formData.secret,
       passwordLength: formData.passwordLength,
       includeSymbols: formData.includeSymbols,
-      salt: secret?.salt || '',
+      salt: formData.salt,
     };
     dispatch({ type: 'SET_CURRENT_EDIT_DATA', payload: currentFormAsSecret });
   }, [formData, secret, dispatch]);
@@ -209,6 +215,39 @@ export const EditCredential: React.FC = () => {
             <Text fontSize="xs" color={COLORS.secondary} mt={0.5}>
               Recommended: 16-32 characters
             </Text>
+          </FormControl>
+
+          {/* TOTP Secret Field */}
+          <FormControl>
+            <FormLabel>
+              Salt
+              <Text
+                as="span"
+                color={COLORS.secondary}
+                fontWeight="normal"
+                ml={1}
+              >
+                (Optional)
+              </Text>
+            </FormLabel>
+            <Input
+              value={formData.salt}
+              onChange={(e) => handleInputChange('salt', e.target.value)}
+              placeholder="for password generation"
+              fontSize="md"
+              h={10}
+              borderRadius="md"
+              borderColor={COLORS.border}
+              _hover={{ borderColor: COLORS.secondary }}
+              _focus={{
+                borderColor: COLORS.link,
+                boxShadow: `0 0 0 1px ${COLORS.link}`,
+              }}
+              _placeholder={{
+                color: COLORS.secondary,
+                fontSize: 'sm',
+              }}
+            />
           </FormControl>
         </VStack>
       </CardBody>

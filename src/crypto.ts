@@ -1,4 +1,5 @@
 // Deterministic password derivation using Web Crypto PBKDF2
+import { z } from 'zod';
 
 const te = new TextEncoder();
 
@@ -208,8 +209,54 @@ export const generateTOTP = async ({
   }
 };
 
-// Types for the secrets file
-export interface SecretEntry {
+// Zod schemas for validation
+export const SecretEntrySchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  color: z.string().optional(),
+  website: z.string().optional(),
+  username: z.string().optional(),
+
+  // properties for TOTP
+  secret: z.string().optional(),
+
+  // properties for password generation
+  salt: z.string().min(1, 'Salt is required'),
+  passwordLength: z.number().int().min(1).max(128).optional(),
+  includeSymbols: z.boolean().optional(),
+});
+
+const CURRENT_VERSION = 3;
+export const SecretsFileSchema = z.object({
+  v: z.number().int().min(1, 'Version must be a positive integer'),
+  ts: z.number().int().min(0, 'Timestamp must be non-negative'),
+  d: z.array(SecretEntrySchema),
+});
+
+// Types derived from Zod schemas
+export type SecretEntry = z.infer<typeof SecretEntrySchema>;
+export type SecretsFile = z.infer<typeof SecretsFileSchema>;
+
+// Validation helper functions
+export const validateSecretEntry = (data: unknown): SecretEntry => {
+  return SecretEntrySchema.parse(data);
+};
+
+export const validateSecretsFile = (data: unknown): SecretsFile => {
+  return SecretsFileSchema.parse(data);
+};
+
+// Safe parsing functions that return results with error information
+export const safeParseSecretEntry = (data: unknown) => {
+  return SecretEntrySchema.safeParse(data);
+};
+
+export const safeParseSecretsFile = (data: unknown) => {
+  return SecretsFileSchema.safeParse(data);
+};
+
+// Legacy interface kept for backward compatibility (deprecated)
+/** @deprecated Use SecretEntry type instead */
+export interface SecretEntryV2 {
   name: string;
   secret: string;
 
@@ -228,14 +275,31 @@ export interface SecretEntry {
   username?: string;
 
   // Salt string for password derivation
-  salt: string;
+  salt?: string;
 }
 
-interface SecretsFile {
-  v: number;
-  ts: number;
-  d: SecretEntry[];
-}
+export const generateDefaultSalt = ({
+  website,
+  username,
+}: {
+  website?: string;
+  username?: string;
+}): string => {
+  const domain = website ? normalizeDomainFromUrl(website) : '';
+  return `salt:[domain=${domain}][username=${username || ''}]`;
+};
+
+const migrateToLatest = (data: SecretEntryV2): SecretEntry => {
+  return {
+    ...data,
+    color: data.color || '',
+    passwordLength: data.passwordLength || 16,
+    includeSymbols: data.includeSymbols || true,
+    website: data.website || undefined,
+    username: data.username || undefined,
+    salt: data.salt || generateDefaultSalt(data),
+  };
+};
 
 // Encrypt secrets file with master password
 export const encryptSecretsFile = async (
@@ -245,6 +309,9 @@ export const encryptSecretsFile = async (
   if (!masterPassword) {
     throw new Error('Master password is required');
   }
+
+  // Validate input with Zod schema
+  const validatedSecretsFile = SecretsFileSchema.parse(secretsFile);
 
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -272,7 +339,7 @@ export const encryptSecretsFile = async (
     ['encrypt'],
   );
 
-  const data = te.encode(JSON.stringify(secretsFile));
+  const data = te.encode(JSON.stringify(validatedSecretsFile));
   const encrypted = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     key,
@@ -347,13 +414,29 @@ export const decryptSecretsFile = async (
     );
 
     const text = new TextDecoder().decode(decrypted);
-    return JSON.parse(text);
+    const parsedData = JSON.parse(text);
+    // Validate with Zod schema
+    return SecretsFileSchema.parse(parsedData);
   } catch (_decryptError) {
     // If decryption fails, try parsing as plain JSON (for backward compatibility)
     try {
       const plainFile = JSON.parse(encryptedData);
+
+      // if the version is not current we need to migrate the file
+      //
+
       if (plainFile.d && Array.isArray(plainFile.d)) {
-        return plainFile;
+        if (plainFile.v < CURRENT_VERSION) {
+          // Migrate the file to the current version
+
+          plainFile.v = CURRENT_VERSION;
+          plainFile.ts = Math.floor(Date.now() / 1000);
+          plainFile.d = plainFile.d.map((entry: SecretEntryV2) => {
+            return migrateToLatest(entry);
+          });
+        }
+        // Validate with Zod schema
+        return SecretsFileSchema.parse(plainFile);
       } else {
         throw new Error('Invalid file format');
       }
