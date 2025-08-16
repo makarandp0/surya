@@ -215,14 +215,21 @@ export const generateTOTP = async ({
 export interface SecretEntry {
   name: string;
   secret: string;
+
+  // TODO: add sample encrypt
+  // to verify master password
+
+  // TODO: create zod schema.
+
+  // TODO: make all these props required
+  // and update the version.
+
   color?: string;
   passwordLength?: number;
   includeSymbols?: boolean;
   website?: string;
   username?: string;
-
-  // add
-  // salt:string.
+  salt?: string;
 }
 
 interface SecretsFile {
