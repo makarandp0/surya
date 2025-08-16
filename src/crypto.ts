@@ -53,29 +53,26 @@ const mapBytesToCharset = (
 
 export const derivePassword = async ({
   masterKey,
-  domain,
-  username = '',
-  length = 16,
-  includeSymbols = false,
+  secretEntry,
   iterations = 200000,
 }: {
   masterKey: string;
-  domain: string;
-  username?: string;
-  length?: number;
-  includeSymbols?: boolean;
+  secretEntry: SecretEntry;
   iterations?: number;
 }): Promise<string> => {
   if (!masterKey) {
     throw new Error('Missing master key');
   }
-  if (!domain) {
-    throw new Error('Missing domain');
+  if (!secretEntry.website) {
+    throw new Error('Missing website in secret entry');
   }
 
+  const length = secretEntry.passwordLength || 16;
+  const includeSymbols = secretEntry.includeSymbols || false;
+
   const keyMaterial = await getKeyMaterial(masterKey);
-  // Include username in the salt for unique passwords per user
-  const salt = te.encode(`site:${domain}:${username}`);
+  // Use the salt from secret entry
+  const salt = te.encode(secretEntry.salt);
   // Derive 64 bytes to have enough entropy for mapping
   const bits = await crypto.subtle.deriveBits(
     {
@@ -157,20 +154,20 @@ const numberTo8ByteArray = (num: number): Uint8Array => {
 };
 
 export const generateTOTP = async ({
-  secret,
+  secretEntry,
   digits = 6,
   period = 30,
   timestamp,
 }: {
-  secret: string;
+  secretEntry: SecretEntry;
   digits?: number;
   period?: number;
   timestamp?: number;
 }): Promise<{ code: string; timeRemaining: number }> => {
-  if (!secret) {
-    throw new Error('Missing TOTP secret');
+  if (!secretEntry.secret) {
+    throw new Error('Missing TOTP secret in secret entry');
   }
-  if (secret.length <= 2) {
+  if (secretEntry.secret.length <= 2) {
     throw new Error('Invalid TOTP secret length');
   }
 
@@ -180,7 +177,7 @@ export const generateTOTP = async ({
 
   try {
     // Decode base32 secret
-    const secretBytes = base32Decode(secret);
+    const secretBytes = base32Decode(secretEntry.secret);
 
     // Convert counter to 8-byte array
     const counterBytes = numberTo8ByteArray(counter);
@@ -229,7 +226,9 @@ export interface SecretEntry {
   includeSymbols?: boolean;
   website?: string;
   username?: string;
-  salt?: string;
+
+  // Salt string for password derivation
+  salt: string;
 }
 
 interface SecretsFile {

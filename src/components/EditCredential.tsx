@@ -41,6 +41,7 @@ export const EditCredential: React.FC = () => {
       secret: formData.secret,
       passwordLength: formData.passwordLength,
       includeSymbols: formData.includeSymbols,
+      salt: secret?.salt || '',
     };
     dispatch({ type: 'SET_CURRENT_EDIT_DATA', payload: currentFormAsSecret });
   }, [formData, secret, dispatch]);

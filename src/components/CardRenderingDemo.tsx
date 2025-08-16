@@ -12,6 +12,7 @@ const sampleSecrets: SecretEntry[] = [
     username: 'user@example.com',
     passwordLength: 16,
     includeSymbols: false,
+    salt: 'github-demo-salt',
   },
   {
     name: 'Google',
@@ -20,6 +21,7 @@ const sampleSecrets: SecretEntry[] = [
     username: 'user@gmail.com',
     passwordLength: 20,
     includeSymbols: true,
+    salt: 'google-demo-salt',
   },
   {
     name: 'Work Email',
@@ -28,6 +30,7 @@ const sampleSecrets: SecretEntry[] = [
     username: 'user@company.com',
     passwordLength: 12,
     includeSymbols: false,
+    salt: 'work-email-demo-salt',
   },
   {
     name: 'Discord',
@@ -36,6 +39,7 @@ const sampleSecrets: SecretEntry[] = [
     username: 'gamer123',
     passwordLength: 16,
     includeSymbols: true,
+    salt: 'discord-demo-salt',
   },
   {
     name: 'Netflix',
@@ -44,6 +48,7 @@ const sampleSecrets: SecretEntry[] = [
     username: 'user@example.com',
     passwordLength: 14,
     includeSymbols: false,
+    salt: 'netflix-demo-salt',
   },
   {
     name: 'Banking',
@@ -52,6 +57,7 @@ const sampleSecrets: SecretEntry[] = [
     username: 'customer123',
     passwordLength: 18,
     includeSymbols: true,
+    salt: 'banking-demo-salt',
   },
   {
     name: 'AWS Console',
@@ -60,6 +66,7 @@ const sampleSecrets: SecretEntry[] = [
     username: 'admin@company.com',
     passwordLength: 20,
     includeSymbols: true,
+    salt: 'aws-demo-salt',
   },
   {
     name: 'Spotify',
@@ -68,6 +75,7 @@ const sampleSecrets: SecretEntry[] = [
     username: 'musiclover@email.com',
     passwordLength: 12,
     includeSymbols: false,
+    salt: 'spotify-demo-salt',
   },
   {
     name: 'Very Long Service Name That Should Be Truncated Properly',
@@ -78,6 +86,7 @@ const sampleSecrets: SecretEntry[] = [
       'very.long.username.that.might.cause.layout.issues@company-with-long-name.com',
     passwordLength: 16,
     includeSymbols: true,
+    salt: 'long-name-demo-salt',
   },
 ];
 

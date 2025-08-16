@@ -1,10 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import {
-  SecretEntry,
-  derivePassword,
-  generateTOTP,
-  normalizeDomainFromUrl,
-} from '../crypto';
+import { SecretEntry, derivePassword, generateTOTP } from '../crypto';
 import { OpenAICredentialCard, type OpenAICredCardProps } from './OpenAiCard';
 
 interface OpenAICredentialCardWrapperProps {
@@ -26,19 +21,10 @@ export const OpenAICredentialCardWrapper: React.FC<
       throw new Error('Master password is required');
     }
 
-    // Determine the domain to use for password generation
-    let targetDomain = '';
-    if (secretEntry.website) {
-      targetDomain = normalizeDomainFromUrl(secretEntry.website);
-    }
-
     // Generate password deterministically
     const password = await derivePassword({
       masterKey: masterPassword,
-      domain: targetDomain,
-      username: secretEntry.username || '',
-      length: secretEntry.passwordLength || 16,
-      includeSymbols: secretEntry.includeSymbols || false,
+      secretEntry,
     });
 
     return password;
@@ -52,7 +38,7 @@ export const OpenAICredentialCardWrapper: React.FC<
 
     try {
       const totpResult = await generateTOTP({
-        secret: secretEntry.secret,
+        secretEntry,
       });
       setTotpCode(totpResult.code);
 
@@ -65,7 +51,7 @@ export const OpenAICredentialCardWrapper: React.FC<
       console.warn('Failed to generate TOTP:', error);
       setTotpCode(undefined);
     }
-  }, [secretEntry.secret]);
+  }, [secretEntry]);
 
   // Generate TOTP on mount and set up refresh interval
   useEffect(() => {

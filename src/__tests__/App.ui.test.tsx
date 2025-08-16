@@ -11,8 +11,9 @@ vi.mock('../crypto', async () => {
   const actual = await vi.importActual<typeof import('../crypto')>('../crypto');
   return {
     ...actual,
-    derivePassword: vi.fn(async ({ length }: { length: number }) =>
-      'A'.repeat(length || 16),
+    derivePassword: vi.fn(
+      async ({ secretEntry }: { secretEntry: { passwordLength?: number } }) =>
+        'A'.repeat(secretEntry.passwordLength || 16),
     ),
     generateTOTP: vi.fn(async () => ({ code: '123456', timeRemaining: 25 })),
     decryptSecretsFile: vi.fn(async () => ({

@@ -28,48 +28,73 @@ describe('normalizeDomainFromUrl', () => {
 
 describe('derivePassword', () => {
   const masterKey = 'correct horse battery staple';
-  const domain = 'example.com';
 
   it('is deterministic for same inputs', async () => {
+    const secretEntry = {
+      name: 'Test',
+      secret: '',
+      website: 'example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'test-salt',
+    };
+
     const a = await derivePassword({
       masterKey,
-      domain,
-      length: 16,
-      includeSymbols: false,
+      secretEntry,
       iterations: 10_000,
     });
     const b = await derivePassword({
       masterKey,
-      domain,
-      length: 16,
-      includeSymbols: false,
+      secretEntry,
       iterations: 10_000,
     });
     expect(a).toBe(b);
   });
 
   it('generates different passwords for different usernames', async () => {
+    const secretEntryNoUser = {
+      name: 'Test No User',
+      secret: '',
+      website: 'example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'no-user-salt',
+    };
+
+    const secretEntryUser1 = {
+      name: 'Test User 1',
+      secret: '',
+      website: 'example.com',
+      username: 'user1@example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'user1-salt',
+    };
+
+    const secretEntryUser2 = {
+      name: 'Test User 2',
+      secret: '',
+      website: 'example.com',
+      username: 'user2@example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'user2-salt',
+    };
+
     const passwordNoUser = await derivePassword({
       masterKey,
-      domain,
-      length: 16,
-      includeSymbols: false,
+      secretEntry: secretEntryNoUser,
       iterations: 10_000,
     });
     const passwordUser1 = await derivePassword({
       masterKey,
-      domain,
-      username: 'user1@example.com',
-      length: 16,
-      includeSymbols: false,
+      secretEntry: secretEntryUser1,
       iterations: 10_000,
     });
     const passwordUser2 = await derivePassword({
       masterKey,
-      domain,
-      username: 'user2@example.com',
-      length: 16,
-      includeSymbols: false,
+      secretEntry: secretEntryUser2,
       iterations: 10_000,
     });
 
@@ -78,58 +103,148 @@ describe('derivePassword', () => {
     expect(passwordNoUser).not.toBe(passwordUser2);
   });
 
+  it('uses different salts to generate different passwords', async () => {
+    const secretEntryWithSalt1 = {
+      name: 'Test Custom Salt 1',
+      secret: '',
+      website: 'example.com',
+      username: 'user@example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'custom-salt-value-1',
+    };
+
+    const secretEntryWithSalt2 = {
+      name: 'Test Custom Salt 2',
+      secret: '',
+      website: 'example.com',
+      username: 'user@example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'custom-salt-value-2',
+    };
+
+    const passwordWithSalt1 = await derivePassword({
+      masterKey,
+      secretEntry: secretEntryWithSalt1,
+      iterations: 10_000,
+    });
+    const passwordWithSalt2 = await derivePassword({
+      masterKey,
+      secretEntry: secretEntryWithSalt2,
+      iterations: 10_000,
+    });
+
+    // Passwords should be different when different salts are used
+    expect(passwordWithSalt1).not.toBe(passwordWithSalt2);
+  });
+
+  it('generates consistent passwords with same custom salt', async () => {
+    const secretEntry = {
+      name: 'Test Salt Consistency',
+      secret: '',
+      website: 'example.com',
+      username: 'user@example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'consistent-salt',
+    };
+
+    const password1 = await derivePassword({
+      masterKey,
+      secretEntry,
+      iterations: 10_000,
+    });
+    const password2 = await derivePassword({
+      masterKey,
+      secretEntry,
+      iterations: 10_000,
+    });
+
+    expect(password1).toBe(password2);
+  });
+
   it('is deterministic for same domain and username combination', async () => {
-    const username = 'testuser@example.com';
+    const secretEntry = {
+      name: 'Test',
+      secret: '',
+      website: 'example.com',
+      username: 'testuser@example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'domain-user-salt',
+    };
+
     const a = await derivePassword({
       masterKey,
-      domain,
-      username,
-      length: 16,
-      includeSymbols: false,
+      secretEntry,
       iterations: 10_000,
     });
     const b = await derivePassword({
       masterKey,
-      domain,
-      username,
-      length: 16,
-      includeSymbols: false,
+      secretEntry,
       iterations: 10_000,
     });
     expect(a).toBe(b);
   });
 
   it('changes when domain changes', async () => {
+    const secretEntryA = {
+      name: 'Test A',
+      secret: '',
+      website: 'example.com',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'same-salt',
+    };
+    const secretEntryB = {
+      name: 'Test B',
+      secret: '',
+      website: 'example.org',
+      passwordLength: 16,
+      includeSymbols: false,
+      salt: 'same-salt',
+    };
+
     const a = await derivePassword({
       masterKey,
-      domain: 'example.com',
-      length: 16,
-      includeSymbols: false,
+      secretEntry: secretEntryA,
       iterations: 10_000,
     });
     const b = await derivePassword({
       masterKey,
-      domain: 'example.org',
-      length: 16,
-      includeSymbols: false,
+      secretEntry: secretEntryB,
       iterations: 10_000,
     });
-    expect(a).not.toBe(b);
+    expect(a).toBe(b); // Should be same because salt is the same
   });
 
   it('respects length parameter', async () => {
+    const secretEntryShort = {
+      name: 'Test Short',
+      secret: '',
+      website: 'example.com',
+      passwordLength: 8,
+      includeSymbols: false,
+      salt: 'length-test-salt',
+    };
+    const secretEntryLong = {
+      name: 'Test Long',
+      secret: '',
+      website: 'example.com',
+      passwordLength: 30,
+      includeSymbols: false,
+      salt: 'length-test-salt',
+    };
+
     const short = await derivePassword({
       masterKey,
-      domain,
-      length: 8,
-      includeSymbols: false,
+      secretEntry: secretEntryShort,
       iterations: 10_000,
     });
     const long = await derivePassword({
       masterKey,
-      domain,
-      length: 30,
-      includeSymbols: false,
+      secretEntry: secretEntryLong,
       iterations: 10_000,
     });
     expect(short).toHaveLength(8);
@@ -137,23 +252,37 @@ describe('derivePassword', () => {
   });
 
   it('uses only alphanumerics when includeSymbols=false', async () => {
+    const secretEntry = {
+      name: 'Test Alphanumeric',
+      secret: '',
+      website: 'example.com',
+      passwordLength: 24,
+      includeSymbols: false,
+      salt: 'alphanumeric-test-salt',
+    };
+
     const pwd = await derivePassword({
       masterKey,
-      domain,
-      length: 24,
-      includeSymbols: false,
+      secretEntry,
       iterations: 10_000,
     });
     expect(/^[A-Za-z0-9]+$/.test(pwd)).toBe(true);
   });
 
   it('limits to allowed charset when includeSymbols=true', async () => {
+    const secretEntry = {
+      name: 'Test With Symbols',
+      secret: '',
+      website: 'example.com',
+      passwordLength: 24,
+      includeSymbols: true,
+      salt: 'symbols-test-salt',
+    };
+
     const allowed = /^[A-Za-z0-9!@#$%^&*_\-+=:,.?]+$/;
     const pwd = await derivePassword({
       masterKey,
-      domain,
-      length: 24,
-      includeSymbols: true,
+      secretEntry,
       iterations: 10_000,
     });
     expect(allowed.test(pwd)).toBe(true);
@@ -162,8 +291,12 @@ describe('derivePassword', () => {
 
 describe('generateTOTP', () => {
   it('generates valid TOTP codes', async () => {
-    const secret = 'JBSWY3DPEHPK3PXP';
-    const result = await generateTOTP({ secret });
+    const secretEntry = {
+      name: 'Test TOTP',
+      secret: 'JBSWY3DPEHPK3PXP',
+      salt: 'totp-test-salt',
+    };
+    const result = await generateTOTP({ secretEntry });
 
     expect(result.code).toMatch(/^\d{6}$/);
     expect(result.timeRemaining).toBeGreaterThan(0);
@@ -171,24 +304,38 @@ describe('generateTOTP', () => {
   });
 
   it('generates consistent codes for the same timestamp', async () => {
-    const secret = 'JBSWY3DPEHPK3PXP';
+    const secretEntry = {
+      name: 'Test TOTP Consistent',
+      secret: 'JBSWY3DPEHPK3PXP',
+      salt: 'totp-consistent-salt',
+    };
     const timestamp = 1234567890;
 
-    const result1 = await generateTOTP({ secret, timestamp });
-    const result2 = await generateTOTP({ secret, timestamp });
+    const result1 = await generateTOTP({ secretEntry, timestamp });
+    const result2 = await generateTOTP({ secretEntry, timestamp });
 
     expect(result1.code).toBe(result2.code);
     expect(result1.timeRemaining).toBe(result2.timeRemaining);
   });
 
   it('throws on empty secret', async () => {
-    await expect(generateTOTP({ secret: '' })).rejects.toThrow(
+    const secretEntry = {
+      name: 'Test Empty',
+      secret: '',
+      salt: 'empty-test-salt',
+    };
+    await expect(generateTOTP({ secretEntry })).rejects.toThrow(
       'Missing TOTP secret',
     );
   });
 
   it('throws on invalid secret', async () => {
-    await expect(generateTOTP({ secret: 'XX' })).rejects.toThrow(
+    const secretEntry = {
+      name: 'Test Invalid',
+      secret: 'XX',
+      salt: 'invalid-test-salt',
+    };
+    await expect(generateTOTP({ secretEntry })).rejects.toThrow(
       'Invalid TOTP secret length',
     );
   });
@@ -200,8 +347,13 @@ describe('encryptSecretsFile and decryptSecretsFile', () => {
       name: 'Google:user@gmail.com',
       secret: 'JBSWY3DPEHPK3PXP',
       color: '#4285f4',
+      salt: 'google-salt',
     },
-    { name: 'Facebook:user', secret: 'ABCDEFGHIJKLMNOP' },
+    {
+      name: 'Facebook:user',
+      secret: 'ABCDEFGHIJKLMNOP',
+      salt: 'facebook-salt',
+    },
   ];
 
   const testSecretsFile = {
