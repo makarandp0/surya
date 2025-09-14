@@ -22,7 +22,13 @@ import {
 } from '@chakra-ui/react';
 import { generateDefaultSalt, SecretEntry } from '../crypto';
 import { COLORS } from '../constants/colors';
-import { SHARED_INPUT_STYLES } from '../constants/componentStyles';
+import {
+  SHARED_INPUT_STYLES,
+  FORM_LABEL_STYLES,
+  ACCORDION_BUTTON_STYLES,
+  ACCORDION_HEADER_TEXT,
+  ACCORDION_PANEL_STYLES,
+} from '../constants/componentStyles';
 import { useAppContext, useAppActions } from '../contexts/useAppContext';
 
 export const EditCredential: React.FC = () => {
@@ -131,23 +137,23 @@ export const EditCredential: React.FC = () => {
       borderRadius="lg"
       border={`1px solid ${COLORS.border}`}
     >
-      <CardBody pt={4} pb={4}>
+      <CardBody pt={4} pb={4} px={3}>
         <Accordion defaultIndex={[0, 1, 2]} allowMultiple>
           {/* General Section */}
           <AccordionItem border="none" mb={4}>
-            <AccordionButton px={0} py={2}>
+            <AccordionButton {...ACCORDION_BUTTON_STYLES}>
               <Box flex="1" textAlign="left">
-                <Text fontWeight="semibold" color={COLORS.primary}>
+                <Text {...ACCORDION_HEADER_TEXT}>
                   General Information
                 </Text>
               </Box>
-              <AccordionIcon />
+              <AccordionIcon color={COLORS.secondary} />
             </AccordionButton>
-            <AccordionPanel px={0} pb={4}>
+            <AccordionPanel {...ACCORDION_PANEL_STYLES}>
               <VStack spacing={4}>
                 {/* Name Field */}
                 <FormControl>
-                  <FormLabel>Display Name</FormLabel>
+                  <FormLabel {...FORM_LABEL_STYLES}>Display Name</FormLabel>
                   <Input
                     {...SHARED_INPUT_STYLES}
                     value={formData.name}
@@ -158,7 +164,7 @@ export const EditCredential: React.FC = () => {
 
                 {/* Website Field */}
                 <FormControl>
-                  <FormLabel>Website URL</FormLabel>
+                  <FormLabel {...FORM_LABEL_STYLES}>Website URL</FormLabel>
                   <Input
                     {...SHARED_INPUT_STYLES}
                     value={formData.website}
@@ -174,24 +180,25 @@ export const EditCredential: React.FC = () => {
 
           {/* 2FA Section */}
           <AccordionItem border="none" mb={4}>
-            <AccordionButton px={0} py={2}>
+            <AccordionButton {...ACCORDION_BUTTON_STYLES}>
               <Box flex="1" textAlign="left">
-                <Text fontWeight="semibold" color={COLORS.primary}>
+                <Text {...ACCORDION_HEADER_TEXT}>
                   Two-Factor Authentication
                 </Text>
               </Box>
-              <AccordionIcon />
+              <AccordionIcon color={COLORS.secondary} />
             </AccordionButton>
-            <AccordionPanel px={0} pb={4}>
+            <AccordionPanel {...ACCORDION_PANEL_STYLES}>
               <VStack spacing={4}>
                 {/* TOTP Secret Field */}
                 <FormControl>
-                  <FormLabel>
+                  <FormLabel {...FORM_LABEL_STYLES}>
                     TOTP Secret{' '}
                     <Text
                       as="span"
                       color={COLORS.secondary}
                       fontWeight="normal"
+                      fontSize="xs"
                       ml={1}
                     >
                       (Optional)
@@ -199,6 +206,7 @@ export const EditCredential: React.FC = () => {
                   </FormLabel>
                   <Input
                     {...SHARED_INPUT_STYLES}
+                    fontFamily="mono"
                     value={formData.secret}
                     onChange={(e) =>
                       handleInputChange('secret', e.target.value)
@@ -212,19 +220,19 @@ export const EditCredential: React.FC = () => {
 
           {/* Password Section */}
           <AccordionItem border="none">
-            <AccordionButton px={0} py={2}>
+            <AccordionButton {...ACCORDION_BUTTON_STYLES}>
               <Box flex="1" textAlign="left">
-                <Text fontWeight="semibold" color={COLORS.primary}>
+                <Text {...ACCORDION_HEADER_TEXT}>
                   Password Generation
                 </Text>
               </Box>
-              <AccordionIcon />
+              <AccordionIcon color={COLORS.secondary} />
             </AccordionButton>
-            <AccordionPanel px={0} pb={4}>
+            <AccordionPanel {...ACCORDION_PANEL_STYLES}>
               <VStack spacing={4}>
                 {/* Username Field */}
                 <FormControl>
-                  <FormLabel>Username / Email</FormLabel>
+                  <FormLabel {...FORM_LABEL_STYLES}>Username / Email</FormLabel>
                   <Input
                     {...SHARED_INPUT_STYLES}
                     value={formData.username}
@@ -237,7 +245,7 @@ export const EditCredential: React.FC = () => {
 
                 {/* Password Length Field */}
                 <FormControl>
-                  <FormLabel>Generated Password Length</FormLabel>
+                  <FormLabel {...FORM_LABEL_STYLES}>Generated Password Length</FormLabel>
                   <Input
                     {...SHARED_INPUT_STYLES}
                     type="number"
@@ -252,20 +260,21 @@ export const EditCredential: React.FC = () => {
                     min="8"
                     max="64"
                   />
-                  <Text fontSize="xs" color={COLORS.secondary} mt={0.5}>
+                  <Text fontSize="xs" color={COLORS.secondary} mt={1}>
                     Recommended: 16-32 characters
                   </Text>
                 </FormControl>
 
                 {/* Salt Field */}
                 <FormControl>
-                  <HStack justify="space-between" align="center" mb={1}>
-                    <FormLabel mb={0}>
+                  <HStack justify="space-between" align="center" mb={2}>
+                    <FormLabel {...FORM_LABEL_STYLES} mb={0}>
                       Salt
                       <Text
                         as="span"
                         color={COLORS.secondary}
                         fontWeight="normal"
+                        fontSize="xs"
                         ml={1}
                       >
                         {isNewEntry ? '(Auto-generated)' : '(From saved entry)'}
@@ -287,7 +296,7 @@ export const EditCredential: React.FC = () => {
                   </HStack>
 
                   {isEditingSalt && (
-                    <Alert status="warning" mb={3} borderRadius="md">
+                    <Alert status="warning" mb={3} borderRadius="md" fontSize="sm">
                       <AlertIcon />
                       <AlertDescription fontSize="sm">
                         Manually editing the salt will affect password
@@ -300,6 +309,8 @@ export const EditCredential: React.FC = () => {
                   )}
 
                   <Input
+                    {...SHARED_INPUT_STYLES}
+                    fontFamily="mono"
                     value={formData.salt}
                     onChange={(e) => handleInputChange('salt', e.target.value)}
                     placeholder={
@@ -307,19 +318,6 @@ export const EditCredential: React.FC = () => {
                         ? 'Auto-generated from website and username'
                         : 'Salt from the saved credential entry'
                     }
-                    fontSize="md"
-                    h={10}
-                    borderRadius="md"
-                    borderColor={COLORS.border}
-                    _hover={{ borderColor: COLORS.secondary }}
-                    _focus={{
-                      borderColor: COLORS.link,
-                      boxShadow: `0 0 0 1px ${COLORS.link}`,
-                    }}
-                    _placeholder={{
-                      color: COLORS.secondary,
-                      fontSize: 'sm',
-                    }}
                     readOnly={!isEditingSalt}
                     bg={!isEditingSalt ? 'gray.50' : 'white'}
                     cursor={!isEditingSalt ? 'default' : 'text'}
